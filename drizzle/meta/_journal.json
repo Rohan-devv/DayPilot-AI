@@ -15,6 +15,13 @@
       "when": 1781514053573,
       "tag": "0001_flimsy_blink",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1781601984851,
+      "tag": "0002_bored_liz_osborn",
+      "breakpoints": true
     }
   ]
 }
