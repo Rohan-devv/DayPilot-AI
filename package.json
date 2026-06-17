@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint" ,
+    "test":"tsx app/api/email.ts "
   },
   "dependencies": {
     "@corsair-dev/cli": "^0.1.19",

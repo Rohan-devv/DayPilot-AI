@@ -9,7 +9,11 @@ const REDIRECT_URI = `${process.env.APP_URL}/api/auth`;
 export async function GET(request: NextRequest) {
   const session = await auth(); 
 
-  console.log(typeof session?.user.id)
+ console.log(
+  "CONNECT USER",
+  session?.user.id,
+  session?.user.email
+)
 
   if (!session?.user?.id) {
     return NextResponse.json(
@@ -31,7 +35,7 @@ export async function GET(request: NextRequest) {
     corsair,
     plugin,
     {
-       tenantId :`user_${session.user.id}`,
+      tenantId :`user_${session.user.id}`,
       redirectUri: REDIRECT_URI,
     }
   );

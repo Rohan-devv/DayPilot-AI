@@ -1,24 +1,26 @@
-import {auth} from "@/lib/auth";     
-import {redirect} from "next/navigation"
+import { auth } from "@/lib/auth";
+import { getThreads } from "@/lib/services/email.service";
 
-export default  async function DashBoardPage() { 
-    const session = await auth()  
+export default async function DashboardPage() {
+  const session = await auth();
 
-    if(!session){  
-        redirect("/login")
-    }  
+  if (!session?.user?.id) {
+    return <div>Unauthorized</div>;
+  }  
+  
 
-    console.log("session: ", session)
+  const emails = await getThreads(session.user.id); 
+  const threads = emails.threads ?? [];
 
+  return (
+    <div>
+      <h1>Inbox</h1>
 
-    return ( 
-        <div>
-            <h1>Dashboard</h1>  
-
-            <pre>
-        {JSON.stringify(session.user, null, 2)}
-             </pre>
+      {emails.threads?.map((email) => (
+        <div key={email.id}>
+          {email.snippet}
         </div>
-
-    )
+      ))}
+    </div>
+  );
 }
