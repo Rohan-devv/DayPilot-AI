@@ -1,6 +1,6 @@
   import NextAuth from "next-auth"
   import Google from "next-auth/providers/google" 
-  import { createUserIfNotExists, getUserByEmail } from "./services/user.service";
+  import { createUserIfNotExists, getUserByEmail } from "./services/user/user.service";
 
   export const { handlers, signIn, signOut, auth } = NextAuth({
     providers: [
@@ -27,7 +27,7 @@
       },
 
       async jwt({ token }) {
-        if (!token.email) {
+         if (!token.email || token.userId) {
           return token;
         }
 

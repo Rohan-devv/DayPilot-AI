@@ -8,7 +8,7 @@ export default async  function Home() {
   if(!session){
     redirect("/login")
   } 
-  redirect("/login")
+  redirect("/dashboard")
 
 
   return (
