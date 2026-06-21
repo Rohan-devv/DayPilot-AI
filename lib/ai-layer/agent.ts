@@ -1,7 +1,9 @@
 import { Agent, run } from "@openai/agents";
 
 import { buildCorsairTools } from "./provider";
-import { DAYPILOT_SYSTEM_PROMPT } from "./prompt";
+import { DAYPILOT_SYSTEM_PROMPT } from "./prompt"; 
+import { parseAgentResult }
+from "./parser";
 
 export async function runAgent(
   tenantId: string,
@@ -25,7 +27,21 @@ export async function runAgent(
   const result = await run(
     agent,
     prompt
-  );
+  );    
 
-  return result.finalOutput;
+ 
+
+
+
+
+  
+
+console.log(
+  parseAgentResult(result, prompt)
+);
+ 
+
+ return parseAgentResult(
+  result, prompt
+);
 }
