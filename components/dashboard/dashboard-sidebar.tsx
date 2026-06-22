@@ -60,8 +60,8 @@ export function DashboardSidebar() {
   >
     <div
       style={{
-    width: "75px",
-    height: "62px",
+    width: "150px",
+    height: "60px",
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
@@ -72,8 +72,8 @@ export function DashboardSidebar() {
         src="/DayPilot_logo.png"
         alt="DayPilot AI"
         style={{
-    width: "95px",
-    height: "62px",
+    width: "150px",
+    height: "80px",
     objectFit: "contain", 
     mixBlendMode: "screen",
      filter: "brightness(1.7)"
@@ -81,31 +81,7 @@ export function DashboardSidebar() {
       />
     </div>
 
-    <div>
-      <h2
-        style={{
-          margin: 0,
-          color: "#ffffff",
-          fontSize: "17px",
-          fontWeight: 700,
-          letterSpacing: "-0.02em",
-          lineHeight: 1.2,
-        }}
-      >
-        DayPilot AI
-      </h2>
-
-      <p
-        style={{
-          margin: "2px 0 0",
-          fontSize: "11px",
-          color: "#6b7280",
-          fontWeight: 500,
-        }}
-      >
-        AI Email Workspace
-      </p>
-    </div>
+   
   </div>
 </div>
 

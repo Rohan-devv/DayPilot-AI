@@ -27,7 +27,21 @@ export async function runAgent(
   const result = await run(
     agent,
     prompt
-  );    
+  );     
+  
+//   console.log(
+//   Object.keys(result)
+// );
+
+// console.log(
+//   result.finalOutput
+// );
+
+// console.dir(
+//   result.newItems,
+//   { depth: null }
+// );
+
 
  
 
@@ -37,11 +51,11 @@ export async function runAgent(
   
 
 console.log(
-  parseAgentResult(result, prompt)
+  parseAgentResult(result)
 );
  
 
  return parseAgentResult(
-  result, prompt
+  result
 );
 }

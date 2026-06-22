@@ -1,6 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState } from "react"; 
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 
 type Email = {
   type: "email";
@@ -139,7 +141,7 @@ export function AiWorkspace() {
       return;
     }
 
-    if (data.type === "message") {
+    if (data.type === "message" || data.type === "summary") {
       setMessages((prev) => [
         ...prev,
         {
@@ -293,14 +295,95 @@ export function AiWorkspace() {
     );
   }  
 
-  if (msg.content) {
+ if (msg.content) {
   return (
     <div
       key={index}
       className="flex justify-start"
     >
-      <div className="max-w-[80%] rounded-2xl bg-slate-900 px-4 py-3 text-slate-200">
-        {msg.content}
+      <div className="max-w-[85%] rounded-2xl border border-indigo-500/20 bg-slate-900/90 px-5 py-4 text-slate-200 shadow-lg">
+
+        <div className="prose prose-invert prose-sm max-w-none">
+
+          <ReactMarkdown
+            remarkPlugins={[remarkGfm]}
+            components={{
+              h1: ({ children }) => (
+                <h1 className="mb-4 text-2xl font-bold text-white">
+                  {children}
+                </h1>
+              ),
+
+              h2: ({ children }) => (
+                <h2 className="mb-3 mt-6 text-xl font-semibold text-indigo-300">
+                  {children}
+                </h2>
+              ),
+
+              h3: ({ children }) => (
+                <h3 className="mb-2 mt-5 text-lg font-semibold text-cyan-300">
+                  {children}
+                </h3>
+              ),
+
+              p: ({ children }) => (
+                <p className="mb-3 leading-7 text-slate-300">
+                  {children}
+                </p>
+              ),
+
+              strong: ({ children }) => (
+                <strong className="font-semibold text-white">
+                  {children}
+                </strong>
+              ),
+
+              ul: ({ children }) => (
+                <ul className="mb-4 ml-5 list-disc space-y-2">
+                  {children}
+                </ul>
+              ),
+
+              ol: ({ children }) => (
+                <ol className="mb-4 ml-5 list-decimal space-y-3">
+                  {children}
+                </ol>
+              ),
+
+              li: ({ children }) => (
+                <li className="text-slate-300">
+                  {children}
+                </li>
+              ),
+
+              blockquote: ({ children }) => (
+                <blockquote className="my-4 border-l-4 border-indigo-500 pl-4 italic text-slate-400">
+                  {children}
+                </blockquote>
+              ),
+
+              code: ({ children }) => (
+                <code className="rounded bg-slate-800 px-2 py-1 text-cyan-300">
+                  {children}
+                </code>
+              ),
+
+              a: ({ href, children }) => (
+                <a
+                  href={href}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="text-cyan-400 underline"
+                >
+                  {children}
+                </a>
+              ),
+            }}
+          >
+            {msg.content}
+          </ReactMarkdown>
+
+        </div>
       </div>
     </div>
   );
