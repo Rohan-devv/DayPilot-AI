@@ -1,7 +1,7 @@
 import { processOAuthCallback } from "corsair/oauth";
 import { NextRequest, NextResponse } from "next/server";
 
-import { corsair } from "@/lib/corsair";
+import { corsair } from "@/lib/corsair/corsair";
 
 const REDIRECT_URI = `${process.env.APP_URL}/api/auth`;
 
@@ -44,7 +44,9 @@ export async function GET(request: NextRequest) {
 
     response.cookies.delete("oauth_state");
 
-    return response;
+   return NextResponse.redirect(
+  new URL("/dashboard", request.url)
+);
   } catch (error) {
     console.dir(error, { depth: null });
  

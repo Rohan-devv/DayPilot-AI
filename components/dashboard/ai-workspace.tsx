@@ -1,6 +1,18 @@
 "use client";
 
-import { useState } from "react"; 
+import {
+  Bot,
+  CheckCircle2,
+  Inbox,
+  Paperclip,
+  PenLine,
+  Search,
+  Send,
+  Sparkles,
+  Zap,
+} from "lucide-react"; 
+
+import { useState, useEffect } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 
@@ -17,59 +29,70 @@ type ChatMessage = {
   role: "user" | "assistant";
   content?: string;
   emails?: Email[];
-};  
+};
 
-function EmailCard({email}: {email: Email}) {
-  const attachments = email.attachments ?? [];  
+const quickActions = [
+  {
+    label: "Latest emails",
+    prompt: "Latest Emails",
+    icon: Search,
+  },
+  {
+    label: "Summarize inbox",
+    prompt: "Summarize Inbox",
+    icon: Sparkles,
+  },
+  {
+    label: "Draft reply",
+    prompt: "Draft Reply",
+    icon: PenLine,
+  },
+  {
+    label: "Send email",
+    prompt: "Send Emails",
+    icon: Send,
+  },
+];
 
-  console.log("type of data on frontend email component: ", typeof email)// string 
-
-  console.log(email)  
-
-//   {
-//   "type": "email",
-//   "from": "Excloud <no-reply@excloud.dev>",
-//   "date": "Sat, 20 Jun 2026 11:00:25 +0000",
-//   "subject": "Excloud | Resource summary for Rohan-ChaiCode",
-//   "snippet": "Resource summary Rohan-ChaiCode Org #2078 · As of 2026-06-20 10:57 UTC Hi Rohan Pal, Here&#39;s a summary of resources currently active under Rohan-ChaiCode. 2 Compute 2 Volumes 0 Snapshots 0 IPv4",
-//   "attachments": []
-// }
+function EmailCard({ email }: { email: Email }) {
+  const attachments = email.attachments ?? []; 
+  
 
   return (
-    <div className="w-full max-w-2xl rounded-2xl border border-indigo-500/20 bg-slate-900/80 p-5 backdrop-blur">
+    <div className="w-full rounded-lg border border-zinc-800/90 bg-zinc-950/75 p-4 shadow-[0_20px_50px_rgba(0,0,0,0.28)] backdrop-blur">
       <div className="flex items-start justify-between gap-4">
-        <div>
-          <p className="text-xs uppercase tracking-wider text-slate-500">
+        <div className="min-w-0">
+          <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-zinc-500">
             From
           </p>
 
-          <p className="mt-1 text-sm font-medium text-white break-all">
+          <p className="mt-1 break-all text-sm font-medium text-zinc-100">
             {email.from}
           </p>
         </div>
 
-        <p className="text-xs text-slate-500 shrink-0">
+        <p className="shrink-0 text-right text-xs text-zinc-500">
           {email.date}
         </p>
       </div>
 
       <div className="mt-4">
-        <p className="text-xs uppercase tracking-wider text-indigo-400">
+        <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-violet-300/80">
           Subject
         </p>
 
-        <h3 className="mt-1 text-lg font-semibold text-white">
+        <h3 className="mt-1 text-base font-semibold leading-6 text-white">
           {email.subject}
         </h3>
       </div>
 
-      <p className="mt-4 text-sm leading-6 text-slate-300">
+      <p className="mt-3 text-sm leading-6 text-zinc-400">
         {email.snippet}
       </p>
 
       {attachments.length > 0 && (
-        <div className="mt-4 border-t border-slate-800 pt-4">
-          <p className="mb-2 text-xs uppercase tracking-wider text-slate-500">
+        <div className="mt-4 border-t border-zinc-800 pt-4">
+          <p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-zinc-500">
             Attachments
           </p>
 
@@ -77,9 +100,10 @@ function EmailCard({email}: {email: Email}) {
             {attachments.map((file) => (
               <div
                 key={file}
-                className="rounded-lg border border-slate-700 bg-slate-800 px-3 py-2 text-sm text-slate-200"
+                className="inline-flex items-center gap-2 rounded-lg border border-zinc-700/80 bg-zinc-900 px-3 py-2 text-sm text-zinc-200"
               >
-                📎 {file}
+                <Paperclip className="h-3.5 w-3.5 text-violet-300" />
+                <span>{file}</span>
               </div>
             ))}
           </div>
@@ -92,395 +116,331 @@ function EmailCard({email}: {email: Email}) {
 export function AiWorkspace() {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(false);  
 
- async function handleSendMessage() {
-  if (!input.trim() || loading) return;
 
-  const currentInput = input;
+  const [connections, setConnections] =
+  useState({
+    gmailConnected: false,
+    calendarConnected: false,
+  });    
 
-  setMessages((prev) => [
-    ...prev,
-    {
-      role: "user",
-      content: currentInput,
-    },
-  ]);
+  useEffect(() => {
+  async function loadStatus() {
+    try {
+      const res = await fetch(
+        "/api/onboarding/status"
+      );
 
-  setInput("");
-  setLoading(true);
+      const data = await res.json();
 
-  try {
-    const res = await fetch("/api/agent", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        prompt: currentInput,
-      }),
-    });
-
-    if (!res.ok) {
-      throw new Error("Failed to call agent");
+      setConnections(data);
+    } catch (error) {
+      console.error(error);
     }
-
-    const data = await res.json();
-
-    console.log("Agent Response:", data);
-
-    if (data.type === "email_list") {
-      setMessages((prev) => [
-        ...prev,
-        {
-          role: "assistant",
-          emails: data.emails,
-        },
-      ]);
-
-      return;
-    }
-
-    if (data.type === "message" || data.type === "summary") {
-      setMessages((prev) => [
-        ...prev,
-        {
-          role: "assistant",
-          content: data.content,
-        },
-      ]);
-
-      return;
-    }
-
-    setMessages((prev) => [
-      ...prev,
-      {
-        role: "assistant",
-        content:
-          "I couldn't understand the response format.",
-      },
-    ]);
-  } catch (error) {
-    console.error(error);
-
-    setMessages((prev) => [
-      ...prev,
-      {
-        role: "assistant",
-        content:
-          "Something went wrong. Please try again.",
-      },
-    ]);
-  } finally {
-    setLoading(false);
   }
-}
+
+  loadStatus();
+}, []); 
+
+
+  
+
+  async function handleSendMessage() {
+    if (!input.trim() || loading) return;
+
+    const currentInput = input;
+
+    setMessages((prev) => [
+      ...prev,
+      {
+        role: "user",
+        content: currentInput,
+      },
+    ]);
+
+    setInput("");
+    setLoading(true);
+
+    try {
+      const res = await fetch("/api/agent", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          prompt: currentInput,
+        }),
+      });
+
+      if (!res.ok) {
+        throw new Error("Failed to call agent");
+      }
+
+      const data = await res.json();
+
+      if (data.type === "email_list") {
+        setMessages((prev) => [
+          ...prev,
+          {
+            role: "assistant",
+            emails: data.emails,
+          },
+        ]);
+
+        return;
+      }
+
+      if (data.type === "message" || data.type === "summary") {
+        setMessages((prev) => [
+          ...prev,
+          {
+            role: "assistant",
+            content: data.content,
+          },
+        ]);
+
+        return;
+      }
+
+      setMessages((prev) => [
+        ...prev,
+        {
+          role: "assistant",
+          content: "I couldn't understand the response format.",
+        },
+      ]);
+    } catch (error) {
+      console.error(error);
+
+      setMessages((prev) => [
+        ...prev,
+        {
+          role: "assistant",
+          content: "Something went wrong. Please try again.",
+        },
+      ]);
+    } finally {
+      setLoading(false);
+    }
+  }
 
   return (
-    <div
-      style={{
-        position: "relative",
-        borderLeft: "1px solid #1e1e24",
-        background: "#050816",
-        display: "flex",
-        flexDirection: "column",
-        height: "100%",
-        overflow: "hidden",
-      }}
-    >
-      {/* AI Glow Strip */}
-      <div
-        style={{
-          position: "absolute",
-          left: 0,
-          top: 0,
-          width: "2px",
-          height: "100%",
-          background:
-            "linear-gradient(to bottom,#06b6d4,#6366f1,#8b5cf6)",
-          boxShadow: "0 0 25px #6366f1",
-        }}
-      />
+    <div className="relative flex h-full flex-col overflow-hidden border-l border-zinc-800 bg-[radial-gradient(circle_at_top_left,rgba(99,102,241,0.12),transparent_32%),linear-gradient(180deg,#0b0b0f_0%,#07070a_52%,#050506_100%)] text-zinc-100">
+      <div className="absolute left-0 top-0 h-full w-px bg-gradient-to-b from-violet-400/80 via-zinc-700 to-transparent" />
 
-      {/* Header */}
-      <div
-        style={{
-          padding: "20px",
-          borderBottom: "1px solid #1e1e24",
-          background:
-            "radial-gradient(circle at top, rgba(99,102,241,.25), transparent 70%)",
-        }}
-      >
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: "12px",
-          }}
-        >
-          <div
-            style={{
-              width: "42px",
-              height: "42px",
-              borderRadius: "50%",
-              background:
-                "linear-gradient(135deg,#6366f1,#06b6d4)",
-              boxShadow:
-                "0 0 30px rgba(99,102,241,.8)",
-            }}
-          />
+       {/* Header — Gmail dot + agent label */}
+    <div className="mb-5 flex justify-center">
+  <div
+    className="
+      inline-flex
+      items-center
+      gap-2
+      rounded-full
+      border
+      border-green-500/20
+      bg-green-500/10
+      px-4
+      py-2
+      backdrop-blur-md
+    "
+  >
+    <span className="relative flex h-[10px] w-[10px]">
+      <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-green-400 opacity-75" />
+      <span className="relative inline-flex h-[10px] w-[10px] rounded-full bg-green-500" />
+    </span>
 
-          <div>
-            <h2
-              style={{
-                margin: 0,
-                color: "white",
-                fontWeight: 700,
-              }}
-            >
-              DayPilot AI
-            </h2>
+    <span className="text-[13px] font-medium text-green-400">
+      {connections.gmailConnected &&
+      connections.calendarConnected
+        ? "Gmail & Calendar Connected"
+        : connections.gmailConnected
+        ? "Gmail Connected"
+        : connections.calendarConnected
+        ? "Calendar Connected"
+        : "No Integrations Connected"}
+    </span>
+  </div>
+</div>
+   <br /> 
+     <hr />
 
-            <p
-              style={{
-                margin: 0,
-                marginTop: "2px",
-                color: "#818cf8",
-                fontSize: "12px",
-                fontWeight: 500,
-              }}
-            >
-              ACTIVE • CONNECTED
-            </p>
-          </div>
-        </div>
-      </div>
-
-      {/* Chat Area */}
-      <div
-        style={{
-          flex: 1,
-          padding: "20px",
-          overflowY: "auto",
-          display: "flex",
-          flexDirection: "column",
-          gap: "12px",
-        }}
-      >
+      <div className="flex flex-1 flex-col gap-4 overflow-y-auto px-5 py-5">
         {messages.length === 0 && (
-          <div
-            style={{
-              margin: "auto",
-              color: "#64748b",
-              fontSize: "14px",
-              textAlign: "center",
-            }}
-          >
-            Start a conversation with DayPilot AI
+          <div className="m-auto flex max-w-[280px] flex-col items-center text-center">
+            <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-lg border border-zinc-800 bg-zinc-950 shadow-[0_24px_70px_rgba(0,0,0,0.35)]">
+              <Sparkles className="h-5 w-5 text-violet-300" />
+            </div>
+            <p className="text-sm font-medium text-zinc-300">
+              Start a conversation with DayPilot AI
+            </p>
+            <p className="mt-1 text-xs leading-5 text-zinc-500">
+              Ask for inbox summaries, email drafts, or a quick read on your latest mail.
+            </p>
           </div>
         )}
 
         {messages.map((msg, index) => {
-  if (msg.role === "user") {
-    return (
-      <div
-        key={index}
-        className="flex justify-end"
-      >
-        <div className="max-w-[80%] rounded-2xl bg-indigo-600 px-4 py-3 text-white">
-          {msg.content}
-        </div>
-      </div>
-    );
-  }  
+          if (msg.role === "user") {
+            return (
+              <div
+                key={index}
+                className="flex justify-end"
+              >
+                <div className="max-w-[82%] rounded-lg border border-violet-300/20 bg-violet-500/20 px-4 py-3 text-sm leading-6 text-violet-50 shadow-[0_16px_40px_rgba(76,29,149,0.24)]">
+                  {msg.content}
+                </div>
+              </div>
+            );
+          }
 
- if (msg.content) {
-  return (
-    <div
-      key={index}
-      className="flex justify-start"
-    >
-      <div className="max-w-[85%] rounded-2xl border border-indigo-500/20 bg-slate-900/90 px-5 py-4 text-slate-200 shadow-lg">
+          if (msg.content) {
+            return (
+              <div
+                key={index}
+                className="flex justify-start"
+              >
+                <div className="max-w-[88%] rounded-lg border border-zinc-800 bg-zinc-950/85 px-4 py-3 text-sm text-zinc-200 shadow-[0_20px_55px_rgba(0,0,0,0.26)]">
+                  <ReactMarkdown
+                    remarkPlugins={[remarkGfm]}
+                    components={{
+                      h1: ({ children }) => (
+                        <h1 className="mb-4 text-xl font-semibold leading-7 text-white">
+                          {children}
+                        </h1>
+                      ),
 
-        <div className="prose prose-invert prose-sm max-w-none">
+                      h2: ({ children }) => (
+                        <h2 className="mb-3 mt-5 text-lg font-semibold leading-7 text-violet-200">
+                          {children}
+                        </h2>
+                      ),
 
-          <ReactMarkdown
-            remarkPlugins={[remarkGfm]}
-            components={{
-              h1: ({ children }) => (
-                <h1 className="mb-4 text-2xl font-bold text-white">
-                  {children}
-                </h1>
-              ),
+                      h3: ({ children }) => (
+                        <h3 className="mb-2 mt-4 text-base font-semibold leading-6 text-cyan-100">
+                          {children}
+                        </h3>
+                      ),
 
-              h2: ({ children }) => (
-                <h2 className="mb-3 mt-6 text-xl font-semibold text-indigo-300">
-                  {children}
-                </h2>
-              ),
+                      p: ({ children }) => (
+                        <p className="mb-3 leading-7 text-zinc-300 last:mb-0">
+                          {children}
+                        </p>
+                      ),
 
-              h3: ({ children }) => (
-                <h3 className="mb-2 mt-5 text-lg font-semibold text-cyan-300">
-                  {children}
-                </h3>
-              ),
+                      strong: ({ children }) => (
+                        <strong className="font-semibold text-white">
+                          {children}
+                        </strong>
+                      ),
 
-              p: ({ children }) => (
-                <p className="mb-3 leading-7 text-slate-300">
-                  {children}
-                </p>
-              ),
+                      ul: ({ children }) => (
+                        <ul className="mb-4 ml-5 list-disc space-y-2 text-zinc-300">
+                          {children}
+                        </ul>
+                      ),
 
-              strong: ({ children }) => (
-                <strong className="font-semibold text-white">
-                  {children}
-                </strong>
-              ),
+                      ol: ({ children }) => (
+                        <ol className="mb-4 ml-5 list-decimal space-y-2 text-zinc-300">
+                          {children}
+                        </ol>
+                      ),
 
-              ul: ({ children }) => (
-                <ul className="mb-4 ml-5 list-disc space-y-2">
-                  {children}
-                </ul>
-              ),
+                      li: ({ children }) => (
+                        <li className="leading-6">
+                          {children}
+                        </li>
+                      ),
 
-              ol: ({ children }) => (
-                <ol className="mb-4 ml-5 list-decimal space-y-3">
-                  {children}
-                </ol>
-              ),
+                      blockquote: ({ children }) => (
+                        <blockquote className="my-4 border-l-2 border-violet-400/70 pl-4 italic text-zinc-400">
+                          {children}
+                        </blockquote>
+                      ),
 
-              li: ({ children }) => (
-                <li className="text-slate-300">
-                  {children}
-                </li>
-              ),
+                      code: ({ children }) => (
+                        <code className="rounded-md border border-zinc-800 bg-black/50 px-1.5 py-0.5 text-cyan-200">
+                          {children}
+                        </code>
+                      ),
 
-              blockquote: ({ children }) => (
-                <blockquote className="my-4 border-l-4 border-indigo-500 pl-4 italic text-slate-400">
-                  {children}
-                </blockquote>
-              ),
+                      a: ({ href, children }) => (
+                        <a
+                          href={href}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="font-medium text-cyan-200 underline decoration-cyan-300/40 underline-offset-4"
+                        >
+                          {children}
+                        </a>
+                      ),
+                    }}
+                  >
+                    {msg.content}
+                  </ReactMarkdown>
+                </div>
+              </div>
+            );
+          }
 
-              code: ({ children }) => (
-                <code className="rounded bg-slate-800 px-2 py-1 text-cyan-300">
-                  {children}
-                </code>
-              ),
+          if (msg.emails) {
+            return (
+              <div
+                key={index}
+                className="space-y-3"
+              >
+                {msg.emails.map((email) => (
+                  <EmailCard
+                    key={`${email.subject}-${email.date}`}
+                    email={email}
+                  />
+                ))}
+              </div>
+            );
+          }
 
-              a: ({ href, children }) => (
-                <a
-                  href={href}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="text-cyan-400 underline"
-                >
-                  {children}
-                </a>
-              ),
-            }}
-          >
-            {msg.content}
-          </ReactMarkdown>
+          return null;
+        })}
 
-        </div>
-      </div>
-    </div>
-  );
-}
+        {loading && (
+          <div className="flex justify-start">
+            <div className="flex items-center gap-3 rounded-lg border border-zinc-800 bg-zinc-950/85 px-4 py-3 shadow-[0_16px_40px_rgba(0,0,0,0.25)]">
+              <div className="flex items-center gap-1.5">
+                <div className="h-1.5 w-1.5 animate-bounce rounded-full bg-violet-300" />
+                <div
+                  className="h-1.5 w-1.5 animate-bounce rounded-full bg-violet-300"
+                  style={{ animationDelay: "0.15s" }}
+                />
+                <div
+                  className="h-1.5 w-1.5 animate-bounce rounded-full bg-violet-300"
+                  style={{ animationDelay: "0.3s" }}
+                />
+              </div>
 
-  if (msg.emails) {
-    return (
-      <div
-        key={index}
-        className="space-y-4"
-      >
-        {msg.emails.map((email) => (
-          <EmailCard
-            key={`${email.subject}-${email.date}`}
-            email={email}
-          />
-        ))}
-      </div>
-    );
-  }
-
-  return null;
-})}
-
-     {loading && (
-  <div className="flex justify-start">
-    <div className="flex items-center gap-3 rounded-2xl border border-indigo-500/20 bg-slate-900 px-4 py-3">
-      <div className="h-2 w-2 animate-bounce rounded-full bg-indigo-400" />
-      <div
-        className="h-2 w-2 animate-bounce rounded-full bg-indigo-400"
-        style={{ animationDelay: "0.15s" }}
-      />
-      <div
-        className="h-2 w-2 animate-bounce rounded-full bg-indigo-400"
-        style={{ animationDelay: "0.3s" }}
-      />
-
-      <span className="ml-2 text-sm text-slate-300">
-        DayPilot AI is thinking...
-      </span>
-    </div>
-  </div>
-)}
+              <span className="text-sm text-zinc-400">
+                DayPilot AI is thinking...
+              </span>
+            </div>
+          </div>
+        )}
       </div>
 
-      {/* Quick Actions */}
-      <div
-        style={{
-          padding: "14px",
-          borderTop: "1px solid #1e1e24",
-          display: "flex",
-          gap: "8px",
-          flexWrap: "wrap",
-        }}
-      >
-        {[
-          "Latest Emails ✨",
-          "Summarize Inbox 🧠",
-          "Draft Reply ⚡",
-          "Send Emails 📧",
-        ].map((item) => (
+      <div className="flex flex-wrap gap-2 border-t border-zinc-800/90 bg-zinc-950/55 px-4 py-3 backdrop-blur-xl">
+        {quickActions.map(({ label, prompt, icon: Icon }) => (
           <button
-            key={item}
-            onClick={() => setInput(item)}
-            style={{
-              background:
-                "linear-gradient(135deg,#1e293b,#111827)",
-              border: "1px solid #3730a3",
-              color: "white",
-              padding: "8px 12px",
-              borderRadius: "999px",
-              fontSize: "12px",
-              cursor: "pointer",
-            }}
+            key={label}
+            type="button"
+            onClick={() => setInput(prompt)}
+            className="inline-flex h-9 items-center gap-2 rounded-full border border-zinc-800 bg-zinc-950 px-3 text-xs font-medium text-zinc-300 shadow-sm transition hover:border-violet-400/50 hover:bg-zinc-900 hover:text-white"
           >
-            {item}
+            <Icon className="h-3.5 w-3.5 text-violet-300" />
+            <span>{label}</span>
           </button>
         ))}
       </div>
 
-      {/* Input */}
-      <div
-        style={{
-          padding: "16px",
-          borderTop: "1px solid #1e1e24",
-        }}
-      >
-        <div
-          style={{
-            background: "#13131a",
-            border: "1px solid #2f3140",
-            borderRadius: "18px",
-            overflow: "hidden",
-            boxShadow:
-              "0 0 30px rgba(99,102,241,.12)",
-          }}
-        >
+      <div className="border-t border-zinc-800/90 bg-black/20 p-4">
+        <div className="overflow-hidden rounded-lg border border-zinc-800 bg-zinc-950/90 shadow-[0_24px_80px_rgba(0,0,0,0.38)] focus-within:border-violet-400/50">
           <textarea
             placeholder="Send an email to abc@gmail.com..."
             value={input}
@@ -494,43 +454,32 @@ export function AiWorkspace() {
                 handleSendMessage();
               }
             }}
-            style={{
-              width: "100%",
-              minHeight: "120px",
-              resize: "none",
-              background: "transparent",
-              border: "none",
-              padding: "16px",
-              color: "white",
-              outline: "none",
-              fontSize: "14px",
-            }}
+            className="h-28 w-full resize-none bg-transparent px-4 py-4 text-sm leading-6 text-zinc-100 outline-none placeholder:text-zinc-500"
           />
 
-          <div
-            style={{
-              padding: "12px",
-              display: "flex",
-              justifyContent: "flex-end",
-              borderTop: "1px solid #2f3140",
-            }}
-          >
+          <div className="flex items-center justify-between border-t border-zinc-800 px-3 py-3">
+            <div className="flex items-center gap-2 text-xs text-zinc-500">
+              <Inbox className="h-3.5 w-3.5" />
+              <span>Inbox agent</span>
+            </div>
+
             <button
+              type="button"
               onClick={handleSendMessage}
               disabled={loading}
-              style={{
-                background:
-                  "linear-gradient(135deg,#6366f1,#06b6d4)",
-                color: "white",
-                border: "none",
-                borderRadius: "12px",
-                padding: "10px 18px",
-                cursor: "pointer",
-                fontWeight: 600,
-                opacity: loading ? 0.7 : 1,
-              }}
+              className="inline-flex h-10 items-center gap-2 rounded-lg border border-violet-300/25 bg-violet-500/90 px-4 text-sm font-semibold text-white shadow-[0_12px_30px_rgba(124,58,237,0.32)] transition hover:bg-violet-400 disabled:cursor-not-allowed disabled:opacity-70"
             >
-              {loading ? "Thinking..." : "Send"}
+              {loading ? (
+                <>
+                  <Zap className="h-4 w-4" />
+                  <span>Thinking</span>
+                </>
+              ) : (
+                <>
+                  <Send className="h-4 w-4" />
+                  <span>Send</span>
+                </>
+              )}
             </button>
           </div>
         </div>

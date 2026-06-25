@@ -1,7 +1,7 @@
 import { generateOAuthUrl } from "corsair/oauth";
 import { NextRequest, NextResponse } from "next/server";
 
-import { corsair } from "@/lib/corsair";
+import { corsair } from "@/lib/corsair/corsair";
 import { auth } from "@/lib/auth";
 
 const REDIRECT_URI = `${process.env.APP_URL}/api/auth`;
@@ -50,4 +50,5 @@ export async function GET(request: NextRequest) {
   });
 
   return response;
-}
+} 
+ 

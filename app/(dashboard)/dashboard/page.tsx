@@ -7,17 +7,35 @@ import { FolderTabs } from "@/components/dashboard/folder-tabs";
 import { EmailList } from "@/components/dashboard/email-list";
 import { AiWorkspace } from "@/components/dashboard/ai-workspace";
 
-import { ResizableLayout } from "@/components/dashboard/resizable-layout";
+import { ResizableLayout } from "@/components/dashboard/resizable-layout"; 
+import {toast, Toaster} from "react-hot-toast"  
+
+import { getConnectionStatus } from "@/lib/corsair/get-connection-status"; 
+import { NextResponse } from "next/server";
 
 export default async function DashboardPage() {
   const session = await auth();
 
   if (!session?.user?.id) {
     return <div>Unauthorized</div>;
+  }    
+
+  const status = await getConnectionStatus(
+    session.user.id
+  );
+
+  if (
+    !status.gmailConnected &&
+    !status.calendarConnected
+  ) {
+    NextResponse.redirect("/onboarding");
   }
 
+
+
   return (
-    <div className="flex h-screen">
+    <div className="flex h-screen"> 
+      <Toaster/>
       <DashboardSidebar />
 
       <ResizableLayout

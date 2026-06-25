@@ -11,7 +11,11 @@ import {
   Bot,
   ChevronRight,
 } from "lucide-react";
-import { useState } from "react";
+import { useState } from "react"; 
+import { signOut } from "next-auth/react";
+import { LogOut } from "lucide-react";  
+import {toast} from "react-hot-toast"
+
 
 const mailItems = [
   { label: "Inbox", icon: Inbox, count: 201 },
@@ -31,7 +35,8 @@ const toolItems = [
 export function DashboardSidebar() {
   const [active, setActive] = useState("Inbox");
 
-  return (
+  return ( 
+   
     <div
       style={{
         width: "260px",
@@ -264,40 +269,97 @@ export function DashboardSidebar() {
       </div>
 
       {/* Footer */}
-      <div
+      {/* Footer */} 
+      
+<div
+  style={{
+    padding: "12px 16px",
+    borderTop: "1px solid #1e1e24",
+  }}
+>  
+
+  {/* Profile */}
+  <div
+    style={{
+      display: "flex",
+      alignItems: "center",
+      gap: "10px",
+      marginBottom: "10px",
+    }}
+  >
+    <div
+      style={{
+        width: "28px",
+        height: "28px",
+        borderRadius: "50%",
+        background: "linear-gradient(135deg, #f97316, #ec4899)",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        fontSize: "12px",
+        fontWeight: 700,
+        color: "#fff",
+        flexShrink: 0,
+      }}
+    >
+      SH
+    </div>
+
+    <div style={{ flex: 1 }}>
+      <p
         style={{
-          padding: "12px 16px",
-          borderTop: "1px solid #1e1e24",
-          display: "flex",
-          alignItems: "center",
-          gap: "10px",
+          fontSize: "12.5px",
+          fontWeight: 600,
+          color: "#c4c4d8",
+          margin: 0,
         }}
       >
-        <div
-          style={{
-            width: "28px",
-            height: "28px",
-            borderRadius: "50%",
-            background: "linear-gradient(135deg, #f97316, #ec4899)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            fontSize: "12px",
-            fontWeight: 700,
-            color: "#fff",
-            flexShrink: 0,
-          }}
-        >
-          SH
-        </div>
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <p style={{ fontSize: "12.5px", fontWeight: 600, color: "#c4c4d8", margin: 0, lineHeight: 1.3 }}>
-            My Account
-          </p>
-          <p style={{ fontSize: "11px", color: "#4b4b5a", margin: 0, lineHeight: 1.3 }}>Free plan</p>
-        </div>
-        <ChevronRight size={13} color="#3a3a4a" />
-      </div>
+        My Account
+      </p>
+
+      <p
+        style={{
+          fontSize: "11px",
+          color: "#4b4b5a",
+          margin: 0,
+        }}
+      >
+        Free Plan
+      </p>
+    </div>
+  </div>
+
+  {/* Logout Button */}
+  <button
+    onClick={() =>  {
+      toast.success("Logged out successfully");
+      signOut({
+        callbackUrl: "/",
+      })  
+    }
+      
+    }
+    style={{
+      width: "100%",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      gap: "8px",
+      padding: "10px",
+      borderRadius: "8px",
+      border: "1px solid #1e1e24",
+      background: "#13131a",
+      color: "#ef4444",
+      cursor: "pointer",
+      fontSize: "13px",
+      fontWeight: 600,
+      transition: "all 0.2s ease",
+    }}
+  >
+    <LogOut size={15} />
+    Logout
+  </button>
+</div>
     </div>
   );
 }

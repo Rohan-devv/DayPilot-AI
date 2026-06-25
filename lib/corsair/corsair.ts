@@ -9,7 +9,19 @@ const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 const db = drizzle(pool); // your app tables
 
 export const corsair = createCorsair({
-    plugins: [gmail(), googlecalendar()],
+    plugins: [gmail({
+         webhookHooks: {
+        messageChanged: {
+            before(ctx, args) {
+                return { ctx, args };
+            },
+           
+            
+        },
+    },
+    }), 
+        googlecalendar() 
+    ],
     database: pool,
     kek: process.env.CORSAIR_KEK!,
     multiTenancy: true,

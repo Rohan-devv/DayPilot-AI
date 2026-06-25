@@ -7,7 +7,9 @@ export function DashboardHeader() {
 
       <p className="text-sm text-muted-foreground">
         Wednesday, June 18
-      </p>
+      </p>  
+
+      
     </div>
   );
 }

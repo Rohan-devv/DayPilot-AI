@@ -1,84 +1,58 @@
 import { and, desc, eq } from "drizzle-orm";
 
-import db  from "@/db";
-import {
-corsairAccounts,
-corsairEntities,
-} from "@/db/schema";
+import db from "@/db";
+import { corsairAccounts, corsairEntities } from "@/db/schema";
 
 export interface EmailThread {
-id: string;
-from: string;
-subject: string;
-date: string;
-snippet: string;
+  id: string;
+  from: string;
+  subject: string;
+  date: string;
+  snippet: string;
 }
 
 export interface EmailThreadsResponse {
-emails: EmailThread[];
-nextPageToken?: string;
+  emails: EmailThread[];
+  nextPageToken?: string;
 }
 
 const PAGE_SIZE = 5;
 
 export async function getThreads(
-userId: string,
-pageToken?: string
+  userId: string,
+  pageToken?: string,
 ): Promise<EmailThreadsResponse> {
+  const offset = Number.parseInt(pageToken ?? "0", 10);
 
-const offset =
-Number.parseInt(
-pageToken ?? "0",
-10
-);
+  const safeOffset = Number.isFinite(offset) && offset > 0 ? offset : 0;
 
-const safeOffset =
-Number.isFinite(offset) &&
-offset > 0
-? offset
-: 0;
+  console.time("raw-db");
 
-console.time("raw-db");
+  const rows = await db
+    .select({
+      entityId: corsairEntities.entityId,
+      data: corsairEntities.data,
+      updatedAt: corsairEntities.updatedAt,
+    })
+    .from(corsairEntities)
+    .innerJoin(
+      corsairAccounts,
+      eq(corsairEntities.accountId, corsairAccounts.id),
+    )
+    .where(
+      and(
+        eq(corsairEntities.entityType, "messages"),
+        eq(corsairAccounts.tenantId, `user_${userId}`),
+      ),
+    )
+    .orderBy(desc(corsairEntities.updatedAt))
+    .limit(PAGE_SIZE + 1)
+    .offset(safeOffset);
 
-const rows = await db
-.select({
-entityId: corsairEntities.entityId,
-data: corsairEntities.data,
-updatedAt: corsairEntities.updatedAt,
-})
-.from(corsairEntities)
-.innerJoin(
-corsairAccounts,
-eq(
-corsairEntities.accountId,
-corsairAccounts.id
-)
-)
-.where(
-and(
-eq(
-corsairEntities.entityType,
-"messages"
-),
-eq(
-corsairAccounts.tenantId,
-`user_${userId}`
-)
-)
-)
-.orderBy(
-desc(corsairEntities.updatedAt)
-)
-.limit(PAGE_SIZE + 1)
-.offset(safeOffset);
+  console.timeEnd("raw-db");
 
-console.timeEnd("raw-db");
-
-const emails: EmailThread[] =
-rows.slice(0, PAGE_SIZE).map((row) => {
-
-  const data =
-    row.data as {
+  const emails: EmailThread[] = rows.slice(0, PAGE_SIZE).map((row) => {
+    const data = row.data as {
       id?: string;
       from?: string;
       subject?: string;
@@ -86,82 +60,25 @@ rows.slice(0, PAGE_SIZE).map((row) => {
       createdAt?: string;
     };
 
+    return {
+      id: data.id ?? row.entityId,
+
+      from: data.from ?? "Unknown",
+
+      subject: data.subject ?? "(No Subject)",
+
+      date: data.createdAt ?? "",
+
+      snippet: data.snippet ?? "",
+    };
+  });
+
   return {
-    id:
-      data.id ??
-      row.entityId,
-
-    from:
-      data.from ??
-      "Unknown",
-
-    subject:
-      data.subject ??
-      "(No Subject)",
-
-    date:
-      data.createdAt ??
-      "",
-
-    snippet:
-      data.snippet ??
-      "",
+    emails,
+    nextPageToken:
+      rows.length > PAGE_SIZE ? String(safeOffset + PAGE_SIZE) : undefined,
   };
-});
-
-return {
-emails,
-nextPageToken:
-rows.length > PAGE_SIZE
-? String(safeOffset + PAGE_SIZE)
-: undefined,
-};
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 // import { corsair } from "@/lib/corsair";
 
@@ -171,13 +88,12 @@ rows.length > PAGE_SIZE
 //   subject: string;
 //   date: string;
 //   snippet: string;
-// }  
+// }
 
 // export interface EmailThreadsResponse {
 //   emails: EmailThread[];
 //   nextPageToken?: string;
-// }  
-
+// }
 
 // function getHeader(
 //   headers: Array<{
@@ -198,8 +114,7 @@ rows.length > PAGE_SIZE
 // // export async function getThreads(
 // //   userId: string,
 // //   pageToken?: string
-// // ): Promise<EmailThreadsResponse> {  
-
+// // ): Promise<EmailThreadsResponse> {
 
 // //   console.time("list");
 
@@ -212,14 +127,13 @@ rows.length > PAGE_SIZE
 // //       userId: "me",
 // //       maxResults: 5,
 // //       pageToken,
-// //     });  
+// //     });
 
 // //     console.timeEnd("list");
 
 // //   const emails = await Promise.all(
 // //     (list.messages ?? []).map(
 // //       async (message) => {
-        
 
 // //         console.time(message.id);
 
@@ -230,15 +144,12 @@ rows.length > PAGE_SIZE
 // //           .messages
 // //           .get({
 // //             id: message.id!,
-// //           }); 
-            
+// //           });
 
 // //           console.timeEnd(message.id);
 
 // //         const headers =
-// //           email.payload?.headers ?? []; 
-
-          
+// //           email.payload?.headers ?? [];
 
 // //         return {
 // //           id: email.id ?? "",
@@ -270,7 +181,7 @@ rows.length > PAGE_SIZE
 // //     nextPageToken:
 // //       list.nextPageToken,
 // //   };
-// // }   
+// // }
 
 // export async function getThreads(
 //   userId: string
@@ -293,4 +204,3 @@ rows.length > PAGE_SIZE
 //     emails: [],
 //   };
 // }
-
