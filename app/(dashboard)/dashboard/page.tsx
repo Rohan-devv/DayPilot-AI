@@ -11,7 +11,7 @@ import { ResizableLayout } from "@/components/dashboard/resizable-layout";
 import {toast, Toaster} from "react-hot-toast"  
 
 import { getConnectionStatus } from "@/lib/corsair/get-connection-status"; 
-import { NextResponse } from "next/server";
+import { redirect } from "next/navigation";
 
 export default async function DashboardPage() {
   const session = await auth();
@@ -28,7 +28,7 @@ export default async function DashboardPage() {
     !status.gmailConnected &&
     !status.calendarConnected
   ) {
-    NextResponse.redirect("/onboarding");
+    redirect("/onboarding");
   }
 
 

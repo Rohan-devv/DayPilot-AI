@@ -261,6 +261,85 @@ export function AiWorkspace() {
         : "No Integrations Connected"}
     </span>
   </div>
+</div>  
+
+<div className="flex justify-center gap-2 mb-4">
+  {connections.gmailConnected && (
+    <button
+      onClick={async () => {
+        const res = await fetch(
+          "/api/disconnect",
+          {
+            method: "POST",
+            headers: {
+              "Content-Type":
+                "application/json",
+            },
+            body: JSON.stringify({
+              plugin: "gmail",
+            }),
+          }
+        );
+
+        const data =
+          await res.json();
+
+        console.log(data);
+
+        window.location.reload();
+      }}
+      className="
+        px-3 py-1.5
+        rounded-lg
+        text-xs
+        bg-red-500/10
+        border
+        border-red-500/20
+        text-red-400
+      "
+    >
+      Disconnect Gmail
+    </button>
+  )}
+
+  {connections.calendarConnected && (
+    <button
+      onClick={async () => {
+        const res = await fetch(
+          "/api/disconnect",
+          {
+            method: "POST",
+            headers: {
+              "Content-Type":
+                "application/json",
+            },
+            body: JSON.stringify({
+              plugin:
+                "googlecalendar",
+            }),
+          }
+        );
+
+        const data =
+          await res.json();
+
+        console.log(data);
+
+        window.location.reload();
+      }}
+      className="
+        px-3 py-1.5
+        rounded-lg
+        text-xs
+        bg-red-500/10
+        border
+        border-red-500/20
+        text-red-400
+      "
+    >
+      Disconnect Calendar
+    </button>
+  )}
 </div>
    <br /> 
      <hr />

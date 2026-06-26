@@ -5,6 +5,8 @@ import {
   useInfiniteQuery,
 } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
+import { useEffect } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface Email {
   id: string;
@@ -33,7 +35,31 @@ async function fetchEmails(pageParam?: string): Promise<EmailResponse> {
   return res.json();
 }
 
-export function EmailList() {
+export function EmailList() {  
+  const queryClient = useQueryClient();  
+
+  useEffect(() => {
+  const es = new EventSource("/api/events");
+
+  es.onmessage = (event) => {
+    console.log("📩 SSE Event:", event.data);
+
+    queryClient.invalidateQueries({
+      queryKey: ["emails", "inbox"],
+    });
+  };
+
+  es.onerror = (err) => {
+    console.error("SSE Error", err);
+  };
+
+  return () => {
+    es.close();
+  };
+}, [queryClient]);  
+
+
+
   const {
     data,
     error,
@@ -51,12 +77,15 @@ export function EmailList() {
     queryKey: ["emails", "inbox"],
     queryFn: ({ pageParam }) => fetchEmails(pageParam),
     initialPageParam: undefined,
-    getNextPageParam: (lastPage) => lastPage.nextPageToken,
-    staleTime: 0,
-    
-  refetchOnWindowFocus:true,
-  refetchInterval:10000,
+    getNextPageParam: (lastPage) => lastPage.nextPageToken, 
+
+
+    staleTime: Infinity,
+    refetchOnWindowFocus: false,
+
   });
+
+
 
   const emails = data?.pages.flatMap((page) => page.emails) ?? [];
 
