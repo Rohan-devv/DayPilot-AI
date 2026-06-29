@@ -10,6 +10,7 @@ import {
   Calendar,
   Bot,
   ChevronRight,
+  Pencil
 } from "lucide-react";
 import { useState } from "react"; 
 import { signOut } from "next-auth/react";
@@ -41,8 +42,8 @@ export function DashboardSidebar() {
       style={{
         width: "260px",
         minHeight: "100vh",
-        background: "#0d0d0f",
-        borderRight: "1px solid #1e1e24",
+        background: "#c7ccd5",
+borderRight: "1px solid #E3E7EE",
         display: "flex",
         flexDirection: "column",
         fontFamily: "'Inter', -apple-system, sans-serif",
@@ -52,7 +53,7 @@ export function DashboardSidebar() {
       {/* Logo */}
 <div
   style={{
-    padding: "20px 18px",
+    padding: "20px 5px",
     borderBottom: "1px solid #1e1e24",
   }}
 >
@@ -63,32 +64,69 @@ export function DashboardSidebar() {
       gap: "12px",
     }}
   >
-    <div
-      style={{
-    width: "150px",
-    height: "60px",
+  <div
+  style={{
+    height: "50px",
     display: "flex",
     alignItems: "center",
-    justifyContent: "center",
-    flexShrink: 0,
+    gap: "12px",
+    paddingLeft: "39px",
+    background: "#c7ccd5",
   }}
-    >
-      <img
-        src="/DayPilot_logo.png"
-        alt="DayPilot AI"
-        style={{
-    width: "150px",
-    height: "80px",
-    objectFit: "contain", 
-    mixBlendMode: "screen",
-     filter: "brightness(1.7)"
-  }}
-      />
-    </div>
+>
+  
+
+  <img
+    src="/gmail.png"
+    alt="gmail"
+    style={{
+      width: "50px",
+      height: "45px",
+      objectFit: "contain",
+    }}
+  />
+
+  <span
+    style={{
+      fontSize: "22px",
+      fontWeight: 400,
+      color: "#212123",
+      fontFamily: '"Google Sans", Roboto, Arial, sans-serif',
+      letterSpacing: "-0.3px",
+    }}
+  >
+    Gmail
+  </span>
+</div>
 
    
-  </div>
+  </div> 
+
+  <div style={{ padding: "16px" }}>
+  <button
+    style={{
+      height: "56px",
+      width: "145px",
+      borderRadius: "16px",
+      border: "none",
+      background: "#9dcff0",
+      color: "#10283b",
+      fontWeight: 500,
+      fontSize: "14px",
+      cursor: "pointer",
+      display: "flex",
+      alignItems: "center",
+      gap: "12px",
+      padding: "0 18px",
+      boxShadow: "0 1px 3px rgba(0,0,0,.15)",
+    }}
+  >
+    ✏️ Compose
+  </button>
 </div>
+</div>   
+
+
 
       {/* Mail Section */}
       <div style={{ padding: "12px 8px 8px", flex: 1 }}>
@@ -96,7 +134,7 @@ export function DashboardSidebar() {
           style={{
             fontSize: "10px",
             fontWeight: "600",
-            color: "#4b4b5a",
+            color: "#6B7280",
             letterSpacing: "0.08em",
             textTransform: "uppercase",
             padding: "4px 10px 8px",
@@ -118,11 +156,11 @@ export function DashboardSidebar() {
                   gap: "10px",
                   width: "100%",
                   padding: "7px 10px",
-                  borderRadius: "8px",
+                  borderRadius: "0 16px 16px 0",
                   border: "none",
                   cursor: "pointer",
-                  background: isActive ? "#1a1a2e" : "transparent",
-                  color: isActive ? "#a5b4fc" : "#8888a0",
+                  background: isActive ? "#D3E3FD" : "transparent",
+color: isActive ? "#001D35" : "#444746",
                   fontWeight: isActive ? 600 : 400,
                   fontSize: "13.5px",
                   textAlign: "left",
@@ -142,20 +180,7 @@ export function DashboardSidebar() {
                   }
                 }}
               >
-                {/* Active indicator bar */}
-                {isActive && (
-                  <span
-                    style={{
-                      position: "absolute",
-                      left: 0,
-                      top: "20%",
-                      height: "60%",
-                      width: "3px",
-                      borderRadius: "0 3px 3px 0",
-                      background: "linear-gradient(180deg, #6366f1, #8b5cf6)",
-                    }}
-                  />
-                )}
+                
 
                 <Icon
                   size={15}
@@ -170,8 +195,8 @@ export function DashboardSidebar() {
                     style={{
                       fontSize: "11px",
                       fontWeight: 600,
-                      color: isActive ? "#a5b4fc" : "#4b4b5a",
-                      background: isActive ? "#1e1e3a" : "#1a1a20",
+                      color: "#5F6368",
+                      background: "transparent",
                       padding: "1px 7px",
                       borderRadius: "20px",
                       minWidth: "20px",
@@ -292,13 +317,14 @@ export function DashboardSidebar() {
         width: "28px",
         height: "28px",
         borderRadius: "50%",
-        background: "linear-gradient(135deg, #f97316, #ec4899)",
+        background: "#F1F3F4",
+color: "#444746",
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
         fontSize: "12px",
         fontWeight: 700,
-        color: "#fff",
+       
         flexShrink: 0,
       }}
     >

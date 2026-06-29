@@ -1,7 +1,7 @@
 import { OpenAIAgentsProvider } from "@corsair-dev/mcp";
 import { tool } from "@openai/agents";
 
-import { corsair } from "@/lib/corsair/corsair";
+import { corsair } from "@/lib/corsair";
 
 export function buildCorsairTools(
   tenantId: string

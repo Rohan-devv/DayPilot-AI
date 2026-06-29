@@ -1,7 +1,7 @@
 
 
 import { processWebhook } from "corsair";
-import { corsair } from "@/lib/corsair/corsair";
+import { corsair } from "@/lib/corsair";
 
 export async function POST(request: Request) {
   try {  
@@ -12,8 +12,8 @@ export async function POST(request: Request) {
   Buffer.from(body.message.data, "base64").toString()
 );    
 
- console.log(payload)
- console.log("messageId", body.message.messageId);
+//  console.log(payload)
+//  console.log("messageId", body.message.messageId);
 // console.log("publishTime", body.message.publishTime);
 
 const email = payload.emailAddress;
@@ -25,9 +25,7 @@ const tenantId =
 
 
 
- console.time("TOTAL");
-
-console.time("PROCESS");
+ 
 
     const result = await processWebhook(
       corsair,
@@ -38,7 +36,7 @@ console.time("PROCESS");
       
     );   
 
-    console.timeEnd("PROCESS");
+   
    
 
     

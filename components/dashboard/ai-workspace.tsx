@@ -268,7 +268,7 @@ export function AiWorkspace() {
     <button
       onClick={async () => {
         const res = await fetch(
-          "/api/disconnect",
+          "/api/disconnectGmail",
           {
             method: "POST",
             headers: {

@@ -1,3 +1,6 @@
+
+
+import { useState } from "react";
 type IntegrationCardProps = {
   title: string;
   description: string;
@@ -14,11 +17,17 @@ export function IntegrationCard({
   connected,
   loading,
   onConnect,
-}: IntegrationCardProps) {   
+}: IntegrationCardProps) {    
+  
+  const [isConnecting, setIsConnecting] = useState(false) 
 
-    const handleConnect = () => {
+    const handleConnect = () => {  
+      
+      setIsConnecting(true)
+
+      
   window.location.href =
-    "/api/connect?plugin=gmail";
+    "/api/connectToGmail?plugin=gmail";
 };
 
     
@@ -77,7 +86,7 @@ export function IntegrationCard({
             transition
           "
           >
-            {loading ? "Connecting..." : "Connect Gmail"}
+            {isConnecting ?"Please wait...": "Connect Gmail"}
           </button>
         )}
       </div>
