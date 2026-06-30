@@ -9,30 +9,19 @@ import {
   corsairIntegrations,
 } from "@/db/schema";
 
-import {
-  and,
-  eq,
-} from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 
-export async function POST(
-  request: NextRequest
-) {
+export async function POST(request: NextRequest) {
   const session = await auth();
 
   if (!session?.user?.id) {
-    return NextResponse.json(
-      { error: "Unauthorized" },
-      { status: 401 }
-    );
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   const { plugin } = await request.json();
 
   if (!plugin) {
-    return NextResponse.json(
-      { error: "Missing plugin" },
-      { status: 400 }
-    );
+    return NextResponse.json({ error: "Missing plugin" }, { status: 400 });
   }
 
   try {
@@ -40,12 +29,7 @@ export async function POST(
     const integration = await db
       .select()
       .from(corsairIntegrations)
-      .where(
-        eq(
-          corsairIntegrations.name,
-          plugin
-        )
-      )
+      .where(eq(corsairIntegrations.name, plugin))
       .limit(1);
 
     const foundIntegration = integration[0];
@@ -53,7 +37,7 @@ export async function POST(
     if (!foundIntegration) {
       return NextResponse.json(
         { error: "Integration not found" },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -63,55 +47,31 @@ export async function POST(
       .from(corsairAccounts)
       .where(
         and(
-          eq(
-            corsairAccounts.tenantId,
-            `user_${session.user.id}`
-          ),
-          eq(
-            corsairAccounts.integrationId,
-            foundIntegration.id
-          )
-        )
+          eq(corsairAccounts.tenantId, `user_${session.user.id}`),
+          eq(corsairAccounts.integrationId, foundIntegration.id),
+        ),
       )
       .limit(1);
 
     const account = accounts[0];
 
     if (!account) {
-      return NextResponse.json(
-        { error: "Account not found" },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: "Account not found" }, { status: 404 });
     }
 
     // Transaction = all or nothing
     await db.transaction(async (tx) => {
       await tx
         .delete(corsairEvents)
-        .where(
-          eq(
-            corsairEvents.accountId,
-            account.id
-          )
-        );
+        .where(eq(corsairEvents.accountId, account.id));
 
       await tx
         .delete(corsairEntities)
-        .where(
-          eq(
-            corsairEntities.accountId,
-            account.id
-          )
-        );
+        .where(eq(corsairEntities.accountId, account.id));
 
       await tx
         .delete(corsairAccounts)
-        .where(
-          eq(
-            corsairAccounts.id,
-            account.id
-          )
-        );
+        .where(eq(corsairAccounts.id, account.id));
     });
 
     return NextResponse.json({
@@ -119,16 +79,13 @@ export async function POST(
       disconnected: plugin,
     });
   } catch (error) {
-    console.error(
-      "Disconnect failed:",
-      error
-    );
+    console.error("Disconnect failed:", error);
 
     return NextResponse.json(
       {
         error: "Failed to disconnect",
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

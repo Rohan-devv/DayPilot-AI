@@ -39,7 +39,9 @@
 
         return token;
       },
+      
 
+      // yaha pr hume session id inject ki hai...
       async session({ session, token }) {
         if (session.user && typeof token.userId === "string") {
           session.user.id = token.userId;

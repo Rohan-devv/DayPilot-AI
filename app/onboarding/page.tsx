@@ -3,11 +3,22 @@
 import { useState } from "react";
 import { IntegrationCard } from "@/components/onBoarding/integration-card";
 import { OnboardingProgress } from "@/components/onBoarding/onboarding-progress";
-import { AiPreview } from "@/components/onBoarding/ai-preview";
+import { AiPreview } from "@/components/onBoarding/ai-preview"; 
+
 
 export default function OnboardingPage() {
   const [gmailConnected] = useState(false);
-  const [calendarConnected] = useState(false);
+  const [calendarConnected] = useState(false); 
+
+  const connectGmail = () => {
+  window.location.href =
+    "/api/connectToGmail?plugin=gmail";
+};
+
+const connectCalendar = () => {
+  window.location.href =
+    "/api/connectToCalendar?plugin=googlecalendar";
+};
 
   return (
     <main className="min-h-screen bg-black text-white">
@@ -37,9 +48,15 @@ export default function OnboardingPage() {
               title="Gmail"
               description="Read emails, draft replies and send emails."
               connected={gmailConnected}
-              onConnect={() => { 
-                
-              }}
+              onConnect={connectGmail}
+              icon={<span className="text-3xl">📧</span>}
+            />  
+
+            <IntegrationCard
+              title="GoogleCalendar"
+              description="Read emails, draft replies and send emails."
+              connected={calendarConnected}
+              onConnect={connectCalendar}
               icon={<span className="text-3xl">📧</span>}
             />
 

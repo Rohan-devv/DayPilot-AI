@@ -17,20 +17,15 @@ export function IntegrationCard({
   connected,
   loading,
   onConnect,
-}: IntegrationCardProps) {    
-  
-  const [isConnecting, setIsConnecting] = useState(false) 
+}: IntegrationCardProps) {
 
-    const handleConnect = () => {  
-      
-      setIsConnecting(true)
+  const [isConnecting, setIsConnecting] = useState(false)
 
-      
-  window.location.href =
-    "/api/connectToGmail?plugin=gmail";
-};
+  const handleClick = () => {
+    setIsConnecting(true)
+    onConnect()
+  }
 
-    
   return (
     <div
       className="
@@ -73,7 +68,7 @@ export function IntegrationCard({
           </div>
         ) : (
           <button
-            onClick={handleConnect}
+            onClick = {handleClick}
             disabled={loading}
             className="
             bg-[#FF6B00]
@@ -86,7 +81,7 @@ export function IntegrationCard({
             transition
           "
           >
-            {isConnecting ?"Please wait...": "Connect Gmail"}
+            {isConnecting ? "Please wait..." : "Connect Gmail"}
           </button>
         )}
       </div>

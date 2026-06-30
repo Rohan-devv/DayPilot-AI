@@ -57,7 +57,6 @@ const quickActions = [
 function EmailCard({ email }: { email: Email }) {
   const attachments = email.attachments ?? []; 
   
-
   return (
     <div className="w-full rounded-lg border border-zinc-800/90 bg-zinc-950/75 p-4 shadow-[0_20px_50px_rgba(0,0,0,0.28)] backdrop-blur">
       <div className="flex items-start justify-between gap-4">
@@ -223,6 +222,22 @@ export function AiWorkspace() {
     } finally {
       setLoading(false);
     }
+  } 
+
+  async function handleDissconnectCalendar(){
+       const res = await fetch("/api/disconnectCalendar", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        }, 
+        body: (JSON.stringify({plugin: "googlecalendar"})) 
+
+       })  
+
+       const data = await res.json() 
+
+       console.log(data)
+       window.location.reload()
   }
 
   return (
@@ -304,29 +319,7 @@ export function AiWorkspace() {
 
   {connections.calendarConnected && (
     <button
-      onClick={async () => {
-        const res = await fetch(
-          "/api/disconnect",
-          {
-            method: "POST",
-            headers: {
-              "Content-Type":
-                "application/json",
-            },
-            body: JSON.stringify({
-              plugin:
-                "googlecalendar",
-            }),
-          }
-        );
-
-        const data =
-          await res.json();
-
-        console.log(data);
-
-        window.location.reload();
-      }}
+      onClick={handleDissconnectCalendar}
       className="
         px-3 py-1.5
         rounded-lg

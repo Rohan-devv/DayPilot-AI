@@ -9,7 +9,6 @@ export const usersTable = pgTable("users", {
 });  
 
 
-
 export const corsairIntegrations = pgTable('corsair_integrations', {
     id: text('id').primaryKey(),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
