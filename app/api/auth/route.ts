@@ -1,5 +1,6 @@
 import { processOAuthCallback } from "corsair/oauth";
 import { NextRequest, NextResponse } from "next/server";
+import { redirect } from "next/navigation";
 
 import { corsair } from "@/lib/corsair";
 
@@ -17,8 +18,7 @@ export async function GET(request: NextRequest) {
     });
   }
 
-  const storedState =
-    request.cookies.get("oauth_state")?.value;
+  const storedState = request.cookies.get("oauth_state")?.value;
 
   if (!storedState || storedState !== state) {
     return new NextResponse("Invalid state", {
@@ -27,34 +27,37 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const result = await processOAuthCallback(
-      corsair,
-      {
-        code,
-        state,
-        redirectUri: REDIRECT_URI,
-      }
-    );
-
-    const response = NextResponse.json({
-      success: true,
-      plugin: result.plugin,
-      tenantId: result.tenantId,
+    const result = await processOAuthCallback(corsair, {
+      code,
+      state,
+      redirectUri: REDIRECT_URI,
     });
+
+    const redirectUrl =
+      result.plugin === "gmail" ? "/onboarding" : "/dashboard";
+
+    /*   
+    1. bhai route file nahi hai waha redirect() kaam nahi karega, isliye NextResponse.redirect use kiya hai.
+    2. Normal file mein directly redirect() kaam karega, route file mein nahi.
+    
+    */
+
+    const response = NextResponse.redirect(new URL(redirectUrl, request.url));
+    // const response = NextResponse.json({
+    //   success: true,
+    //   plugin: result.plugin,
+    //   tenantId: result.tenantId,
+    // });
 
     response.cookies.delete("oauth_state");
 
-   return NextResponse.redirect(
-  new URL("/dashboard", request.url)
-);
+    return response;
+    // Redirect to the dashboard or any other page after successful authentication
+    // return redirect("/dashboard");
   } catch (error) {
     console.dir(error, { depth: null });
- 
 
-    const response = new NextResponse(
-      "OAuth failed",
-      { status: 500 }
-    );
+    const response = new NextResponse("OAuth failed", { status: 500 });
 
     response.cookies.delete("oauth_state");
 

@@ -3,7 +3,14 @@
 import { processWebhook } from "corsair";
 import { corsair } from "@/lib/corsair";
 
-export async function POST(request: Request) {
+export async function POST(request: Request) { 
+
+  console.log("🔥 WEBHOOK HIT");  
+
+  const url = new URL(request.url); 
+
+   console.log("URL:", request.url);
+
   try {  
     const headers = Object.fromEntries(request.headers);
     const body = await request.json();   
@@ -18,14 +25,11 @@ export async function POST(request: Request) {
 
 const email = payload.emailAddress;
 
-const tenantId =
-  email === "rohan49421@gmail.com"
-    ? "user_2"
-    : "user_1";
-
-
-
- 
+const tenantId = url.searchParams.get("tenantId") ||
+url.searchParams.get("tenant_Id") || 
+url.searchParams.get("tenant_id") ||
+ undefined
+  
 
     const result = await processWebhook(
       corsair,
@@ -35,9 +39,6 @@ const tenantId =
         {tenantId}
       
     );   
-
-   
-   
 
     
   return Response.json(
@@ -58,4 +59,4 @@ const tenantId =
       }
     );
   }
-}
+}  

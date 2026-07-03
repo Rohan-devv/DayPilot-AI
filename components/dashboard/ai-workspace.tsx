@@ -14,7 +14,8 @@ import {
 
 import { useState, useEffect } from "react";
 import ReactMarkdown from "react-markdown";
-import remarkGfm from "remark-gfm";
+import remarkGfm from "remark-gfm"; 
+import { Loader2 } from "lucide-react";
 
 type Email = {
   type: "email";
@@ -29,7 +30,12 @@ type ChatMessage = {
   role: "user" | "assistant";
   content?: string;
   emails?: Email[];
-};
+}; 
+
+type ConnectionStatus = {
+  gmailConnected: boolean;
+  calendarConnected: boolean;
+}
 
 const quickActions = [
   {
@@ -112,35 +118,18 @@ function EmailCard({ email }: { email: Email }) {
   );
 }
 
-export function AiWorkspace() {
+export function AiWorkspace( {initialConnections}: {initialConnections: ConnectionStatus}) {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState("");
-  const [loading, setLoading] = useState(false);  
+  const [loading, setLoading] = useState(false);   
+
+  const[isDisconnectingCalendar, setIsDisconnectingCalendar] = useState(false) 
+  const[isDisconnectingGmail, setIsDisconnectingGmail] = useState(false)
 
 
-  const [connections, setConnections] =
-  useState({
-    gmailConnected: false,
-    calendarConnected: false,
-  });    
+  const [connections] = useState(initialConnections);    
 
-  useEffect(() => {
-  async function loadStatus() {
-    try {
-      const res = await fetch(
-        "/api/onboarding/status"
-      );
-
-      const data = await res.json();
-
-      setConnections(data);
-    } catch (error) {
-      console.error(error);
-    }
-  }
-
-  loadStatus();
-}, []); 
+  
 
 
   
@@ -224,7 +213,8 @@ export function AiWorkspace() {
     }
   } 
 
-  async function handleDissconnectCalendar(){
+  async function handleDissconnectCalendar(){ 
+        setIsDisconnectingCalendar(true)
        const res = await fetch("/api/disconnectCalendar", {
         method: "POST",
         headers: {
@@ -238,7 +228,7 @@ export function AiWorkspace() {
 
        console.log(data)
        window.location.reload()
-  }
+  } 
 
   return (
     <div className="relative flex h-full flex-col overflow-hidden border-l border-zinc-800 bg-[radial-gradient(circle_at_top_left,rgba(99,102,241,0.12),transparent_32%),linear-gradient(180deg,#0b0b0f_0%,#07070a_52%,#050506_100%)] text-zinc-100">
@@ -281,7 +271,8 @@ export function AiWorkspace() {
 <div className="flex justify-center gap-2 mb-4">
   {connections.gmailConnected && (
     <button
-      onClick={async () => {
+      onClick={async () => { 
+        setIsDisconnectingGmail(true)
         const res = await fetch(
           "/api/disconnectGmail",
           {
@@ -312,8 +303,16 @@ export function AiWorkspace() {
         border-red-500/20
         text-red-400
       "
-    >
-      Disconnect Gmail
+    >  
+    {isDisconnectingGmail ? (
+      <span className="flex items-center gap-2">
+        <Loader2 className="h-3 w-3 animate-spin" />
+        Disconnecting...
+      </span>
+    ) : (
+      "Disconnect Gmail"
+    )}
+     
     </button>
   )}
 
@@ -330,7 +329,14 @@ export function AiWorkspace() {
         text-red-400
       "
     >
-      Disconnect Calendar
+      {isDisconnectingCalendar ? (
+    <span className="flex items-center gap-2">
+      <Loader2 className="h-3 w-3 animate-spin" />
+      Disconnecting...
+    </span>
+  ) : (
+    "Disconnect Calendar"
+  )}
     </button>
   )}
 </div>

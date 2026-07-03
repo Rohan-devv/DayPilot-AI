@@ -1,24 +1,84 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { IntegrationCard } from "@/components/onBoarding/integration-card";
 import { OnboardingProgress } from "@/components/onBoarding/onboarding-progress";
 import { AiPreview } from "@/components/onBoarding/ai-preview"; 
+import { FullPageLoader } from "@/components/full-page-loader/page";
+//import { FullPageLoader } from "@/components/full-page-loader";
+
 
 
 export default function OnboardingPage() {
-  const [gmailConnected] = useState(false);
-  const [calendarConnected] = useState(false); 
+
+  const [gmailConnected, setGmailConnected] = useState(false);
+  const [calendarConnected, setCalendarConnected] = useState(false); 
+  const [loading, setLoading] = useState(true);   
+
+ 
+  useEffect(() => {
+  if (gmailConnected && calendarConnected) {
+    window.location.replace("/dashboard");
+  }
+}, [gmailConnected, calendarConnected]); 
+
+
+ useEffect(() => {
+    async function loadStatus() {
+      try {
+
+        const res = await fetch("/api/onboarding/status")
+        const data = await res.json()
+
+        setGmailConnected(data.gmailConnected)
+        setCalendarConnected(data.calendarConnected) 
+        //window.location.reload()
+
+      } catch (error) {
+
+        console.error("Error fetching connection status:", error);
+
+      }finally {
+        setLoading(false);
+      }
+
+    }
+    loadStatus()
+  }, []) 
 
   const connectGmail = () => {
-  window.location.href =
-    "/api/connectToGmail?plugin=gmail";
-};
+    window.location.href =
+      "/api/connectToGmail?plugin=gmail";
+  };
 
-const connectCalendar = () => {
-  window.location.href =
-    "/api/connectToCalendar?plugin=googlecalendar";
-};
+  const connectCalendar = () => {
+    window.location.href =
+      "/api/connectToCalendar?plugin=googlecalendar";
+  };
+    
+
+
+
+
+  const current = gmailConnected ? 2 : 1;
+
+  const heading = gmailConnected
+    ? "Almost there 🎉"
+    : "Connect your workspace";
+
+  const description = gmailConnected
+    ? "Connect Google Calendar to finish your setup."
+    : "Connect Gmail to get started with DayPilot.";
+ 
+
+  
+
+  if(loading) { 
+  return <FullPageLoader />;
+
+ }
+
+
 
   return (
     <main className="min-h-screen bg-black text-white">
@@ -26,17 +86,16 @@ const connectCalendar = () => {
 
         <div className="max-w-3xl">
           <OnboardingProgress
-            current={1}
+            current={current}
             total={2}
           />
 
           <h1 className="text-5xl font-semibold mb-4">
-            Connect your workspace
+            {heading}
           </h1>
 
           <p className="text-[#666] text-lg">
-            DayPilot works directly with Gmail
-            and Google Calendar.
+            {description}
           </p>
         </div>
 
@@ -44,23 +103,28 @@ const connectCalendar = () => {
 
           <div className="space-y-6">
 
-            <IntegrationCard
-              title="Gmail"
-              description="Read emails, draft replies and send emails."
-              connected={gmailConnected}
-              onConnect={connectGmail}
-              icon={<span className="text-3xl">📧</span>}
-            />  
+            {!gmailConnected && (
+              <IntegrationCard
+                type="gmail"
+                title="Gmail"
+                description="Read emails, draft replies and send emails."
+                connected={gmailConnected}
+                onConnect={connectGmail}
+                buttonText="Connect Gmail"
+              />
+            )}
 
-            <IntegrationCard
-              title="GoogleCalendar"
-              description="Read emails, draft replies and send emails."
-              connected={calendarConnected}
-              onConnect={connectCalendar}
-              icon={<span className="text-3xl">📧</span>}
-            />
+            {gmailConnected && !calendarConnected && (
+              <IntegrationCard
+                type="googlecalendar"
+                title="Google Calendar"
+                description="Read events, create meetings and manage your schedule."
+                connected={calendarConnected}
+                onConnect={connectCalendar}
+                buttonText="Connect Google Calendar"
+              />
+            )}
 
-            
           </div>
 
           <AiPreview />

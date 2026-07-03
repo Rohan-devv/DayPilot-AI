@@ -1,22 +1,35 @@
+"use client" 
 
+import { MailCheck, CalendarDays } from "lucide-react"; 
+import { useState } from "react";  
 
-import { useState } from "react";
-type IntegrationCardProps = {
+type IntegrationType = "gmail" | "googlecalendar"; 
+
+type IntegrationCardProps = { 
+  type: IntegrationType;
   title: string;
   description: string;
-  icon: React.ReactNode;
+ 
   connected: boolean;
   loading?: boolean;
-  onConnect: () => void;
+  onConnect: () => void; 
+  buttonText?: string;
+};  
+
+const integrationIcons: Record<IntegrationType, React.ReactNode> = {
+  gmail: <MailCheck />,
+  googlecalendar: <CalendarDays />, 
 };
 
 export function IntegrationCard({
+  type,
   title,
   description,
-  icon,
+  
   connected,
   loading,
-  onConnect,
+  onConnect, 
+  buttonText
 }: IntegrationCardProps) {
 
   const [isConnecting, setIsConnecting] = useState(false)
@@ -37,7 +50,7 @@ export function IntegrationCard({
       hover:border-[#2A2A2A]
     "
     >
-      <div className="mb-4">{icon}</div>
+      <div className="mb-4">{integrationIcons[type]}</div>
 
       <h3 className="text-white text-lg font-semibold">
         {title}
@@ -81,10 +94,16 @@ export function IntegrationCard({
             transition
           "
           >
-            {isConnecting ? "Please wait..." : "Connect Gmail"}
+            {isConnecting ? "Please wait..." : buttonText }
           </button>
         )}
       </div>
     </div>
   );
 }
+
+
+
+
+
+

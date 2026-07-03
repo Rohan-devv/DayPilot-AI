@@ -16,7 +16,7 @@ const page = async () => {
   );
 
   if (
-    !status.gmailConnected &&
+    !status.gmailConnected ||
     !status.calendarConnected
   ) {
     redirect("/onboarding");

@@ -8,12 +8,13 @@ import { EmailList } from "@/components/dashboard/email-list";
 import { AiWorkspace } from "@/components/dashboard/ai-workspace";
 
 import { ResizableLayout } from "@/components/dashboard/resizable-layout"; 
-import {toast, Toaster} from "react-hot-toast"  
+import {Toaster} from "react-hot-toast"  
 
 import { getConnectionStatus } from "@/lib/corsair/get-connection-status"; 
 import { redirect } from "next/navigation";
 
-export default async function DashboardPage() {
+export default async function DashboardPage() {  
+  
   const session = await auth();
 
   if (!session?.user?.id) {
@@ -39,7 +40,7 @@ export default async function DashboardPage() {
       <DashboardSidebar />
 
       <ResizableLayout
-        aiPanel={<AiWorkspace />}
+        aiPanel={<AiWorkspace initialConnections={status} />}
       >
         <>
           <DashboardHeader />
