@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { redirect } from "next/navigation";
 
 import { corsair } from "@/lib/corsair";
+import { setupGmailWebhookForTenant } from "@/lib/services/gmail/webhook";
 
 const REDIRECT_URI = `${process.env.APP_URL}/api/auth`;
 
@@ -40,9 +41,15 @@ export async function GET(request: NextRequest) {
     1. bhai route file nahi hai waha redirect() kaam nahi karega, isliye NextResponse.redirect use kiya hai.
     2. Normal file mein directly redirect() kaam karega, route file mein nahi.
     
-    */
+    */  
 
-    const response = NextResponse.redirect(new URL(redirectUrl, request.url));
+    // webhook initialize 
+
+    if(result.plugin === "gmail") {
+  await setupGmailWebhookForTenant(result.tenantId);
+}
+
+    const response = NextResponse.redirect(new URL(redirectUrl, request.url)); 
     // const response = NextResponse.json({
     //   success: true,
     //   plugin: result.plugin,

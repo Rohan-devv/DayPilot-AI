@@ -3,15 +3,23 @@ import { redis } from "./redis";
 export async function publishInboxUpdate(
   tenantId: string | undefined
 ) {
- const receivers = await redis.publish(
-  "inbox:user_2",
-  JSON.stringify({
-    type: "EMAIL_UPDATED",
-  })
-);
+  if (!tenantId) {
+    console.warn("❌ Missing tenantId");
+    return;
+  }
 
-console.log("📨 Publishing inbox update");
-console.log("Receivers:", receivers);
-}  
+  const channel = `inbox:${tenantId}`;
 
-//console.log("Receivers:", receivers);
+  const receivers = await redis.publish(
+    channel,
+    JSON.stringify({
+      type: "EMAIL_UPDATED",
+      tenantId,
+      timestamp: Date.now(),
+    })
+  );
+
+  console.log("📨 Publishing inbox update");
+  console.log("Channel:", channel);
+  console.log("Receivers:", receivers);
+}

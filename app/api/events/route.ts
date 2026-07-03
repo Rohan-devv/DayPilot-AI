@@ -1,11 +1,21 @@
-// app/api/events/route.ts
-
 import Redis from "ioredis";
+
+import { auth } from "@/lib/auth";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 export async function GET() {
+  const session = await auth();
+
+  if (!session?.user?.id) {
+    return new Response("Unauthorized", {
+      status: 401,
+    });
+  }
+
+  const channel = `inbox:user_${session.user.id}`;
+
   const redis = new Redis(
     process.env.REDIS_URL ?? "redis://localhost:6379"
   );
@@ -14,37 +24,47 @@ export async function GET() {
 
   const stream = new ReadableStream({
     async start(controller) {
-      try {
-        await redis.subscribe("inbox:user_2");
+      let heartbeat: NodeJS.Timeout | null = null;
 
-        // Initial connection event on server side on client fetching.... 
+      try {
+        await redis.subscribe(channel);
+
+        console.log(`✅ SSE subscribed to ${channel}`);
+
         controller.enqueue(
           encoder.encode(
-            `event: connected\ndata: {"status":"connected"}\n\n`
+            `event: connected\ndata: ${JSON.stringify({
+              status: "connected",
+              channel,
+            })}\n\n`
           )
         );
 
-        // Heartbeat every 30s
-        const heartbeat = setInterval(() => {
+        heartbeat = setInterval(() => {
           try {
             controller.enqueue(
               encoder.encode(": ping\n\n")
             );
-          } catch (error) {
-            console.error("Heartbeat Error:", error);
-            clearInterval(heartbeat);
+          } catch {
+            if (heartbeat) clearInterval(heartbeat);
             redis.disconnect();
           }
         }, 30000);
 
-        redis.on("message", (_, message) => {
+        redis.on("message", (receivedChannel, message) => {
+          if (receivedChannel !== channel) return;
+
           try {
             controller.enqueue(
-              encoder.encode(`data: ${message}\n\n`)
+              encoder.encode(
+                `data: ${message}\n\n`
+              )
             );
           } catch (error) {
             console.error("SSE Message Error:", error);
-            clearInterval(heartbeat);
+
+            if (heartbeat) clearInterval(heartbeat);
+
             redis.disconnect();
           }
         });
@@ -66,6 +86,10 @@ export async function GET() {
         redis.on("end", () => {
           console.log("Redis connection ended");
 
+          if (heartbeat) {
+            clearInterval(heartbeat);
+          }
+
           try {
             controller.close();
           } catch {}
@@ -74,22 +98,34 @@ export async function GET() {
       } catch (error) {
         console.error("SSE Setup Error:", error);
 
-        controller.enqueue(
-          encoder.encode(
-            `event: error\ndata: ${JSON.stringify({
-              message: "Failed to establish SSE connection",
-            })}\n\n`
-          )
-        );
+        if (heartbeat) {
+          clearInterval(heartbeat);
+        }
+
+        try {
+          controller.enqueue(
+            encoder.encode(
+              `event: error\ndata: ${JSON.stringify({
+                message:
+                  "Failed to establish SSE connection",
+              })}\n\n`
+            )
+          );
+        } catch {}
 
         controller.close();
       }
     },
 
-    cancel() {
-      console.log("Client disconnected from SSE");
+    async cancel() {
+      console.log(
+        `🔌 Client disconnected from ${channel}`
+      );
 
-      redis.unsubscribe();
+      try {
+        await redis.unsubscribe(channel);
+      } catch {}
+
       redis.disconnect();
     },
   });

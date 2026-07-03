@@ -1,5 +1,12 @@
-import { integer, pgTable, varchar ,text ,jsonb, timestamp} from "drizzle-orm/pg-core";
-
+import {
+  integer,
+  jsonb,
+  pgTable,
+  text,
+  timestamp,
+  uniqueIndex,
+  varchar,
+} from "drizzle-orm/pg-core";
 export const usersTable = pgTable("users", {
   id: integer().primaryKey().generatedAlwaysAsIdentity(),
   name: varchar({ length: 255 }).notNull(),
@@ -48,3 +55,27 @@ export const corsairEvents = pgTable('corsair_events', {
     payload: jsonb('payload').notNull().default({}),
     status: text('status'),
 });
+
+
+export const gmailWebhookTenants = pgTable(
+  "gmail_webhook_tenants",
+  {
+    id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    tenantId: text("tenant_id").notNull(),
+    emailAddress: text("email_address").notNull(),
+    historyId: text("history_id"),
+    watchExpiration: timestamp("watch_expiration", { withTimezone: true }),
+  },
+  (table) => [
+    uniqueIndex("gmail_webhook_tenants_tenant_id_unique").on(table.tenantId),
+    uniqueIndex("gmail_webhook_tenants_email_address_unique").on(
+      table.emailAddress
+    ),
+  ]
+);
