@@ -1,5 +1,5 @@
 import { decodePubSubMessage } from "@corsair-dev/gmail";
-import { isNull, lte, or, sql } from "drizzle-orm";
+import { isNull, lte, or, sql, eq } from "drizzle-orm";
 
 import db from "@/db";
 import { gmailWebhookTenants, usersTable } from "@/db/schema";
@@ -64,13 +64,13 @@ function getGmailPubSubTopicName() {
 
   if (!topicName) {
     throw new Error(
-      "Missing GMAIL_PUBSUB_TOPIC. Expected: projects/<project-id>/topics/<topic-name>."
+      "Missing GMAIL_PUBSUB_TOPIC. Expected: projects/<project-id>/topics/<topic-name>.",
     );
   }
 
   if (!topicName.startsWith("projects/") || !topicName.includes("/topics/")) {
     throw new Error(
-      "Invalid GMAIL_PUBSUB_TOPIC. Expected: projects/<project-id>/topics/<topic-name>."
+      "Invalid GMAIL_PUBSUB_TOPIC. Expected: projects/<project-id>/topics/<topic-name>.",
     );
   }
 
@@ -106,16 +106,34 @@ async function readGoogleJson<T>(response: Response) {
 
 async function getValidGmailAccessToken(
   tenantId: string,
-  forceRefresh = false
+  forceRefresh = false,
 ) {
   const keys = corsair.withTenant(tenantId).gmail.keys;
-  const [accessToken, expiresAt, refreshToken, credentials] =
-    await Promise.all([
+  const [accessToken, expiresAt, refreshToken, credentials] = await Promise.all(
+    [
       keys.get_access_token(),
       keys.get_expires_at(),
       keys.get_refresh_token(),
       keys.get_integration_credentials(),
-    ]);
+    ],
+  );  
+
+  /*   
+  ===================================output of Promise.all()======================================== 
+
+
+  [
+  "ya29.a0Af...",                   // get_access_token()
+  "1783572000",                     // get_expires_at()
+  "1//04xK...",                     // get_refresh_token()
+  {
+    client_id: "123456.apps.googleusercontent.com",
+    client_secret: "GOCSPX-abcxyz"
+  }                                 // get_integration_credentials()
+] 
+
+
+  */
 
   const expiresAtNumber = Number(expiresAt);
   const nowSeconds = Math.floor(Date.now() / 1000);
@@ -168,13 +186,14 @@ async function getValidGmailAccessToken(
   ]);
 
   return token.access_token;
-}
+} 
+
 
 async function gmailRequest<T>(
   tenantId: string,
   path: string,
   init: RequestInit = {},
-  forceRefresh = false
+  forceRefresh = false,
 ): Promise<T> {
   const accessToken = await getValidGmailAccessToken(tenantId, forceRefresh);
   const response = await fetch(`${GMAIL_API_BASE}${path}`, {
@@ -194,11 +213,29 @@ async function gmailRequest<T>(
 
   if (!response.ok) {
     throw new Error(
-      `Gmail request failed (${response.status}): ${JSON.stringify(data)}`
+      `Gmail request failed (${response.status}): ${JSON.stringify(data)}`,
     );
   }
 
   return data;
+}
+
+async function gmailApiRequest(tenantId: string, path: string) {
+  const response  = await fetch(`${GMAIL_API_BASE}${path}`, {
+    method: "GET",
+    headers: {
+      "content-type": "application/json",
+      authorization: `Bearer ${await getValidGmailAccessToken(tenantId)}`,
+    },
+  });  
+
+  const data = await readGoogleJson(response);
+
+  if (!response.ok) {
+    throw new Error(
+      `Gmail request failed (${response.status}): ${JSON.stringify(data)}`,
+    );
+  }
 }
 
 export function decodeGmailPubSubPayload(body: unknown) {
@@ -231,14 +268,13 @@ export function decodeGmailPubSubPayload(body: unknown) {
 export async function resolveTenantIdForGmailWebhook(emailAddress: string) {
   const normalizedEmailAddress = normalizeEmailAddress(emailAddress);
 
+  // yaha maping hui hai tenant ki multiple email address ke sath, to pehle mapping check karenge, agar nahi milega to user table me check karenge
   const [mapping] = await db
     .select({
       tenantId: gmailWebhookTenants.tenantId,
     })
     .from(gmailWebhookTenants)
-    .where(
-      sql`lower(${gmailWebhookTenants.emailAddress}) = ${normalizedEmailAddress}`
-    )
+    .where(eq(gmailWebhookTenants.emailAddress, normalizedEmailAddress))
     .limit(1);
 
   if (mapping?.tenantId) {
@@ -250,7 +286,7 @@ export async function resolveTenantIdForGmailWebhook(emailAddress: string) {
       id: usersTable.id,
     })
     .from(usersTable)
-    .where(sql`lower(${usersTable.email}) = ${normalizedEmailAddress}`)
+    .where(eq(usersTable.email, normalizedEmailAddress))
     .limit(1);
 
   return user ? `user_${user.id}` : null;
@@ -290,8 +326,17 @@ export async function setupGmailWebhookForTenant(tenantId: string) {
 
   const profile = await gmailRequest<GmailProfileResponse>(
     tenantId,
-    "/users/me/profile"
+    "/users/me/profile",
   );
+
+  /* ================================---output of profile---=========================
+
+  {
+  "emailAddress":"support@startup.com",
+  "historyId":"500"
+}
+  
+  */
 
   if (!profile.emailAddress) {
     throw new Error(`Could not read Gmail profile for tenant "${tenantId}".`);
@@ -306,13 +351,26 @@ export async function setupGmailWebhookForTenant(tenantId: string) {
     watchExpiration: null,
   });
 
-  const watch = await gmailRequest<GmailWatchResponse>(tenantId, "/users/me/watch", {
-    method: "POST",
-    body: JSON.stringify({
-      topicName,
-      labelIds: ["INBOX"],
-    }),
-  });
+  const watch = await gmailRequest<GmailWatchResponse>(
+    tenantId,
+    "/users/me/watch",
+    {
+      method: "POST",
+      body: JSON.stringify({
+        topicName,
+        labelIds: ["INBOX"],
+      }),
+    },
+  );
+
+  /* ================================---output of watch---=========================
+
+  {
+  "historyId":"500",
+  "expiration":"..."
+}
+  
+  */
 
   const result = {
     tenantId,
@@ -327,7 +385,7 @@ export async function setupGmailWebhookForTenant(tenantId: string) {
 }
 
 export async function renewDueGmailWebhookWatches(
-  renewalWindowMs = WATCH_RENEWAL_WINDOW_MS
+  renewalWindowMs = WATCH_RENEWAL_WINDOW_MS,
 ) {
   const renewBefore = new Date(Date.now() + renewalWindowMs);
   const rows = await db
@@ -339,8 +397,8 @@ export async function renewDueGmailWebhookWatches(
     .where(
       or(
         isNull(gmailWebhookTenants.watchExpiration),
-        lte(gmailWebhookTenants.watchExpiration, renewBefore)
-      )
+        lte(gmailWebhookTenants.watchExpiration, renewBefore),
+      ),
     );
 
   const results: GmailWatchRenewalResult[] = [];

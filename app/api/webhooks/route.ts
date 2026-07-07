@@ -1,21 +1,31 @@
 import { processWebhook } from "corsair";
-import { sql } from "drizzle-orm";
 
-import db from "@/db";
-import { usersTable } from "@/db/schema";
 import { corsair } from "@/lib/corsair";
+import {
+  decodeGmailPubSubPayload,
+  resolveTenantIdForGmailWebhook,
+} from "@/lib/services/gmail/webhook";
 
 export const runtime = "nodejs";
 
 type WebhookBody = Record<string, unknown> | string;
 
-type GmailPubSubPayload = {
-  emailAddress: string;
-  historyId: string;
-};
+async function readWebhookBody(request: Request): Promise<WebhookBody> {
+  const text = await request.text(); 
 
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === "object" && value !== null && !Array.isArray(value);
+  if (!text.trim()) {
+    return {};
+  }
+
+  try {
+    const parsed = JSON.parse(text) as unknown;
+
+    return typeof parsed === "object" && parsed !== null
+      ? (parsed as Record<string, unknown>)
+      : text;
+  } catch {
+    return text;
+  }
 }
 
 function getTenantIdFromUrl(url: string) {
@@ -29,56 +39,8 @@ function getTenantIdFromUrl(url: string) {
   );
 }
 
-function normalizeEmail(email: string) {
-  return email.trim().toLowerCase();
-}
-
-function decodeGmailPubSubPayload(body: WebhookBody) {
-  if (!isRecord(body) || !isRecord(body.message)) {
-    return null;
-  }
-
-  const data = body.message.data;
-
-  if (typeof data !== "string") {
-    return null;
-  }
-
-  try {
-    const payload = JSON.parse(
-      Buffer.from(data, "base64").toString("utf8")
-    ) as Partial<GmailPubSubPayload>;
-
-    if (!payload.emailAddress || !payload.historyId) {
-      return null;
-    }
-
-    return {
-      emailAddress: normalizeEmail(payload.emailAddress),
-      historyId: payload.historyId,
-    } satisfies GmailPubSubPayload;
-  } catch {
-    return null;
-  }
-}
-
-async function readWebhookBody(request: Request): Promise<WebhookBody> {
-  const text = await request.text();
-
-  if (!text.trim()) {
-    return {};
-  }
-
-  try {
-    const parsed = JSON.parse(text) as unknown;
-    return isRecord(parsed) ? parsed : text;
-  } catch {
-    return text;
-  }
-}
-
-async function resolveTenantId(requestUrl: string, body: WebhookBody) {
-  const tenantIdFromUrl = getTenantIdFromUrl(requestUrl);
+async function resolveTenantId(request: Request, body: WebhookBody) {
+  const tenantIdFromUrl = getTenantIdFromUrl(request.url);
 
   if (tenantIdFromUrl) {
     return tenantIdFromUrl;
@@ -90,19 +52,10 @@ async function resolveTenantId(requestUrl: string, body: WebhookBody) {
     return null;
   }
 
-  const [user] = await db
-    .select({ id: usersTable.id })
-    .from(usersTable)
-    .where(sql`lower(${usersTable.email}) = ${gmailPayload.emailAddress}`)
-    .limit(1);
-
-  return user ? `user_${user.id}` : null;
+  return resolveTenantIdForGmailWebhook(gmailPayload.emailAddress);
 }
 
-function jsonResponse(
-  body: Record<string, unknown>,
-  init?: ResponseInit
-) {
+function jsonResponse(body: Record<string, unknown>, init?: ResponseInit) {
   return Response.json(body, {
     ...init,
     headers: {
@@ -114,21 +67,62 @@ function jsonResponse(
 
 export async function POST(request: Request) {
   const body = await readWebhookBody(request);
-  const tenantId = await resolveTenantId(request.url, body);
+
+  const tenantId = await resolveTenantId(request, body);
+
+  console.log("\n================ WEBHOOK =================");
+  console.log("URL:", request.url);
+
+  console.log("\nHEADERS:");
+  console.dir(Object.fromEntries(request.headers), { depth: null });
+
+  console.log("\nBODY:");
+  console.dir(body, { depth: null });
+
+  console.log("=========================================\n");
+
+  /*
+  ================ WEBHOOK =================
+URL: https://localhost:3000/api/webhooks
+
+HEADERS:
+{
+  accept: 'application/json',
+  'accept-encoding': 'gzip, deflate, br',
+  'content-length': '332',
+  'content-type': 'application/json',
+  from: 'noreply@google.com',
+  host: 'recount-depravity-paramount.ngrok-free.dev',
+  'user-agent': 'APIs-Google; (+https://developers.google.com/webmasters/APIs-Google.html)',
+  'x-forwarded-for': '74.125.208.102',
+  'x-forwarded-host': 'recount-depravity-paramount.ngrok-free.dev',
+  'x-forwarded-port': '3000',
+  'x-forwarded-proto': 'https'
+}
+
+BODY:
+{
+  message: {
+    data: 'eyJlbWFpbEFkZHJlc3MiOiJyb2hhbjQ5NDIxQGdtYWlsLmNvbSIsImhpc3RvcnlJZCI6NTc1NTIzfQ==',
+    messageId: '19778183927998526',
+    message_id: '19778183927998526',
+    publishTime: '2026-07-04T09:58:32.458Z',
+    publish_time: '2026-07-04T09:58:32.458Z'
+  },
+  subscription: 'projects/daypilot-ai-499412/subscriptions/webhook-daypilot-sub'
+}
+=========================================  
+   */
 
   if (!tenantId) {
-    const gmailPayload = decodeGmailPubSubPayload(body);
-
-    console.warn("[webhooks] Could not resolve tenant", {
-      gmailEmailAddress: gmailPayload?.emailAddress,
-    });
+    console.warn("[webhooks] Could not resolve tenant");
 
     return jsonResponse(
       {
         success: false,
         error: "Could not resolve webhook tenant",
       },
-      { status: gmailPayload ? 202 : 400 }
+      { status: 202 },
     );
   }
 
@@ -137,7 +131,7 @@ export async function POST(request: Request) {
       corsair,
       Object.fromEntries(request.headers),
       body,
-      { tenantId }
+      { tenantId },
     );
 
     console.log("[webhooks] Processed", {
@@ -152,11 +146,12 @@ export async function POST(request: Request) {
           success: false,
           error: "No matching webhook handler found",
         },
-        { status: 202 }
+        { status: 202 },
       );
     }
 
     const response = result.response ?? { success: true };
+
     const status =
       result.response?.statusCode ??
       (result.response?.success === false ? 500 : 200);
@@ -164,8 +159,11 @@ export async function POST(request: Request) {
     return jsonResponse(response as Record<string, unknown>, {
       status,
       headers: result.responseHeaders,
-    });
-  } catch (error) {
+    }); 
+  }  
+
+  
+  catch (error) {
     console.error("[webhooks] Failed to process webhook", error);
 
     return jsonResponse(
@@ -173,7 +171,7 @@ export async function POST(request: Request) {
         success: false,
         error: "Webhook failed",
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
