@@ -1,7 +1,7 @@
 import { decodePubSubMessage } from "@corsair-dev/gmail";
 import { isNull, lte, or, sql, eq } from "drizzle-orm";
 
-import db from "@/db";
+import {db} from "@/db";
 import { gmailWebhookTenants, usersTable } from "@/db/schema";
 import { corsair } from "@/lib/corsair";
 

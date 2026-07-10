@@ -1,14 +1,20 @@
-import db from "@/db";
+import {db} from "@/db";
 import {
   corsairAccounts,
   corsairIntegrations,
 } from "@/db/schema";
 
-import { eq } from "drizzle-orm";
+import { eq } from "drizzle-orm";  
+
+export type ConnectionStatus = {
+  gmailConnected: boolean;
+  calendarConnected: boolean;
+  integrations: string[];
+};
 
 export async function getConnectionStatus(
   userId: string
-) {
+): Promise<ConnectionStatus> {
   const integrations = await db
     .select({
       name: corsairIntegrations.name,

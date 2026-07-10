@@ -18,8 +18,10 @@ function buildMimeMessage({
     "Content-Type: text/plain; charset=UTF-8",
     "",
     body,
-  ].join("\r\n");
-}
+  ].join("\r\n"); 
+}  
+
+// har element ko \r\n se join kiya hai, taki email ka format sahi rahe.
 
 /**
  * Step 2
@@ -43,14 +45,14 @@ function encodeBase64Url(base64: string): string {
 /**
  * Send Email
  */
-export async function sendEmail(input: SendEmailInput) {
-  const session = await auth();
+export async function sendEmail(input: SendEmailInput, tenantId?: string) {
+  // const session = await auth();
 
-  if (!session?.user?.id) {
-    throw new Error("Unauthorized");
-  }
+  // if (!session?.user?.id) {
+  //   throw new Error("Unauthorized");
+  // }
 
-  const tenantId = `user_${session.user.id}`;
+  // const tenantId = `user_${session.user.id}`;
 
   // Build MIME Email
   const mimeMessage = buildMimeMessage(input);
@@ -63,10 +65,28 @@ export async function sendEmail(input: SendEmailInput) {
 
   // Send Email
   const response = await corsair
-    .withTenant(tenantId)
+    .withTenant(tenantId!)
     .gmail.api.messages.send({
       raw,
     });
 
   return response;
-} 
+}   
+
+
+import { GetMessageInput } from "./types";
+
+export async function getMessage(
+  tenantId: string,
+  { messageId }: GetMessageInput
+) {
+  const response = await corsair
+    .withTenant(tenantId)
+    .gmail.api.messages.get({
+      id: messageId,
+    }); 
+
+  
+
+  return response;
+}

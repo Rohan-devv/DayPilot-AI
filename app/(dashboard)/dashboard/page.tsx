@@ -11,9 +11,13 @@ import { ResizableLayout } from "@/components/dashboard/resizable-layout";
 import {Toaster} from "react-hot-toast"  
 
 import { getConnectionStatus } from "@/lib/corsair/get-connection-status"; 
-import { redirect } from "next/navigation";
+import { redirect } from "next/navigation"; 
+import ClientDashboard from "@/components/dashboard/client-dashboard";
+
+
 
 export default async function DashboardPage() {  
+  
   
   const session = await auth();
 
@@ -34,21 +38,5 @@ export default async function DashboardPage() {
 
 
 
-  return (
-    <div className="flex h-screen"> 
-      <Toaster/>
-      <DashboardSidebar />
-
-      <ResizableLayout
-        aiPanel={<AiWorkspace initialConnections={status} />}
-      >
-        <>
-          <DashboardHeader />
-          <InboxStats />
-          <FolderTabs />
-          <EmailList />
-        </>
-      </ResizableLayout>
-    </div>
-  );
+  return <ClientDashboard status={status} />
 }

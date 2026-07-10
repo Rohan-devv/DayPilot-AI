@@ -4,3 +4,7 @@ export type SendEmailInput = {
     body: string;
 }  
 
+
+export type GetMessageInput = {
+  messageId: string;
+};

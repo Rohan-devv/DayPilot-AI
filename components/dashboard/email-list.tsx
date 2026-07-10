@@ -4,7 +4,7 @@ import {
   type InfiniteData,
   useInfiniteQuery,
 } from "@tanstack/react-query";
-import { Loader2 } from "lucide-react";
+import { Loader2, Star, Paperclip } from "lucide-react";
 import { useEffect } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 
@@ -35,10 +35,10 @@ async function fetchEmails(pageParam?: string): Promise<EmailResponse> {
   return res.json();
 }
 
-export function EmailList() {  
-  
-  
-  const queryClient = useQueryClient();  
+export function EmailList() {
+
+
+  const queryClient = useQueryClient();
 
   useEffect(() => {
   const es = new EventSource("/api/events");
@@ -58,7 +58,7 @@ export function EmailList() {
   return () => {
     es.close();
   };
-}, [queryClient]);  
+}, [queryClient]);
 
 
 
@@ -79,7 +79,7 @@ export function EmailList() {
     queryKey: ["emails", "inbox"],
     queryFn: ({ pageParam }) => fetchEmails(pageParam),
     initialPageParam: undefined,
-    getNextPageParam: (lastPage) => lastPage.nextPageToken, 
+    getNextPageParam: (lastPage) => lastPage.nextPageToken,
 
 
     staleTime: Infinity,
@@ -93,84 +93,120 @@ export function EmailList() {
 
   if (isPending) {
     return (
-      <div className="flex flex-col items-center justify-center gap-4 py-20">
-        <Loader2 className="h-8 w-8 animate-spin" />
-        <p className="text-slate-400">Syncing your inbox...</p>
+      <div className="flex flex-col items-center justify-center gap-3 py-24 font-[Roboto,Arial,sans-serif]">
+        <Loader2 className="h-7 w-7 animate-spin text-[#4285f4]" />
+        <p className="text-sm text-[#5f6368]">Syncing your inbox...</p>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="px-6 py-10 text-sm text-red-400">
+      <div className="px-6 py-10 text-sm text-[#d93025] font-[Roboto,Arial,sans-serif]">
         {error.message}
       </div>
     );
   }
 
   return (
-    <div className="mt-4 h-[380px] overflow-y-auto px-6">
-      <p className="mb-4 text-lg font-medium">Total Emails: {emails.length}</p>
+    <div className="font-[Roboto,Arial,sans-serif] bg-white text-[#202124]">
+      {/* Toolbar */}
+      <div className="flex items-center justify-between border-b border-[#e8eaed] px-4 py-2">
+        <p className="text-xs text-[#5f6368]">
+          <span className="font-medium text-[#202124]">{emails.length}</span>{" "}
+          emails
+        </p>
+      </div>
 
-      {emails.map((email) => {
-        const sender =
-          email.from?.split("<")[0]?.replace(/"/g, "").trim() || "Unknown";
-        const avatar = sender.charAt(0).toUpperCase();
-        const colors = [
-          "bg-blue-600",
-          "bg-purple-600",
-          "bg-green-600",
-          "bg-pink-600",
-          "bg-orange-600",
-        ];
-        const color = colors[sender.length % colors.length];
+      {/* Email rows */}
+      <div className="h-[380px] overflow-y-auto">
+        {emails.map((email) => {
+          const sender =
+            email.from?.split("<")[0]?.replace(/"/g, "").trim() || "Unknown";
+          const avatar = sender.charAt(0).toUpperCase();
+          const colors = [
+            "#1a73e8",
+            "#9334e6",
+            "#188038",
+            "#e8388a",
+            "#e8710a",
+            "#12b5cb",
+            "#d93025",
+          ];
+          const color = colors[sender.length % colors.length];
 
-        return (
-          <div
-            key={email.id}
-            className="mb-3 cursor-pointer rounded-xl border border-slate-700 p-4 transition hover:bg-slate-800/30"
-          >
-            <div className="flex gap-4">
+          return (
+            <div
+              key={email.id}
+              className="group flex cursor-pointer items-center gap-3 border-b border-[#f1f3f4] px-4 py-2.5 transition-colors hover:bg-[#f2f6fc] hover:shadow-[0_1px_2px_0_rgba(60,64,67,0.15)]"
+            >
+              {/* Checkbox (Gmail-style, revealed on hover) */}
+              <input
+                type="checkbox"
+                onClick={(e) => e.stopPropagation()}
+                className="h-4 w-4 shrink-0 cursor-pointer accent-[#1a73e8]"
+              />
+
+              {/* Star */}
+              <button
+                type="button"
+                onClick={(e) => e.stopPropagation()}
+                className="shrink-0 text-[#c4c7c5] hover:text-[#f2b400]"
+                aria-label="Star email"
+              >
+                <Star className="h-[18px] w-[18px]" />
+              </button>
+
+              {/* Avatar */}
               <div
-                className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full font-bold text-white ${color}`}
+                className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-sm font-medium text-white"
+                style={{ backgroundColor: color }}
               >
                 {avatar}
               </div>
 
-              <div className="flex-1">
-                <div className="flex items-center justify-between">
-                  <h3 className="font-semibold text-white">{sender}</h3>
-                  <span className="text-xs text-slate-400">
-                    {email.date ? new Date(email.date).toLocaleDateString() : ""}
-                  </span>
-                </div>
+              {/* Sender */}
+              <div className="w-[180px] shrink-0 truncate text-sm text-[#202124]">
+                {sender}
+              </div>
 
-                <p className="mt-1 font-medium text-slate-200">
-                  {email.subject}
-                </p>
-                <p className="mt-1 line-clamp-2 text-sm text-slate-400">
-                  {email.snippet}
-                </p>
+              {/* Subject + snippet */}
+              <div className="min-w-0 flex-1 truncate text-sm">
+                <span className="text-[#202124]">{email.subject}</span>
+                <span className="text-[#5f6368]"> — {email.snippet}</span>
+              </div>
+
+              {/* Attachment icon placeholder (visual only) */}
+              <Paperclip className="hidden h-4 w-4 shrink-0 text-[#5f6368] group-hover:block" />
+
+              {/* Date */}
+              <div className="w-16 shrink-0 text-right text-xs text-[#5f6368]">
+                {email.date
+                  ? new Date(email.date).toLocaleDateString(undefined, {
+                      month: "short",
+                      day: "numeric",
+                    })
+                  : ""}
               </div>
             </div>
-          </div>
-        );
-      })}
+          );
+        })}
 
-      {hasNextPage && (
-        <div className="flex justify-center py-4">
-          <button
-            onClick={() => fetchNextPage()}
-            disabled={isFetchingNextPage}
-            className="flex items-center gap-2 rounded-lg border border-slate-700 bg-slate-900 px-5 py-2 hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
-          >
-            {isFetchingNextPage && (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            )}
-            {isFetchingNextPage ? "Loading..." : "Load More"}
-          </button>
-        </div>
-      )}
+        {hasNextPage && (
+          <div className="flex justify-center py-4">
+            <button
+              onClick={() => fetchNextPage()}
+              disabled={isFetchingNextPage}
+              className="flex items-center gap-2 rounded-full border border-[#dadce0] bg-white px-5 py-2 text-sm font-medium text-[#1a73e8] transition hover:bg-[#f2f6fc] hover:shadow-sm disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              {isFetchingNextPage && (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              )}
+              {isFetchingNextPage ? "Loading..." : "Load more"}
+            </button>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

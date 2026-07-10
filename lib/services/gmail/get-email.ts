@@ -1,6 +1,6 @@
 import { and, eq } from "drizzle-orm";
 
-import db from "@/db";
+import {db} from "@/db";
 import { corsairAccounts, corsairEntities } from "@/db/schema";
 
 export interface EmailThread {
@@ -16,7 +16,7 @@ export interface EmailThreadsResponse {
   nextPageToken?: string;
 }
 
-const PAGE_SIZE = 5;
+const PAGE_SIZE = 10;
 
 export async function getThreads(
   userId: string,

@@ -4,31 +4,22 @@ import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { getConnectionStatus } from "@/lib/corsair/get-connection-status";
 
-const page = async () => {  
-   const session = await auth();
+export default async function Page() {
+  const session = await auth();
 
   if (!session?.user?.id) {
-    return <LandingPage />;
+    redirect("/landingPage");
   }
 
-  const status = await getConnectionStatus(
-    session.user.id
-  );
+  const status = await getConnectionStatus(session.user.id);
 
-  if (
-    !status.gmailConnected ||
-    !status.calendarConnected
-  ) {
+  if (!status) {
+    redirect("/");
+  }
+
+  if (!status.gmailConnected || !status.calendarConnected) {
     redirect("/onboarding");
   }
 
   redirect("/dashboard");
-  return (
-    <div> 
-      <LandingPage/>
-
-    </div>
-  )
 }
-
-export default page

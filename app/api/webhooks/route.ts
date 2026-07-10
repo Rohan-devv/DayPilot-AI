@@ -66,20 +66,25 @@ function jsonResponse(body: Record<string, unknown>, init?: ResponseInit) {
 }
 
 export async function POST(request: Request) {
-  const body = await readWebhookBody(request);
+  const body = await readWebhookBody(request); 
+
+  console.log({
+  messageId: (body as any)?.message?.messageId,
+  publishTime: (body as any)?.message?.publishTime,
+});
 
   const tenantId = await resolveTenantId(request, body);
 
-  console.log("\n================ WEBHOOK =================");
-  console.log("URL:", request.url);
+  // console.log("\n================ WEBHOOK =================");
+  // console.log("URL:", request.url);
 
-  console.log("\nHEADERS:");
-  console.dir(Object.fromEntries(request.headers), { depth: null });
+  // console.log("\nHEADERS:");
+  // console.dir(Object.fromEntries(request.headers), { depth: null });
 
-  console.log("\nBODY:");
-  console.dir(body, { depth: null });
+  // console.log("\nBODY:");
+  // console.dir(body, { depth: null });
 
-  console.log("=========================================\n");
+  // console.log("=========================================\n");
 
   /*
   ================ WEBHOOK =================
