@@ -4,6 +4,7 @@ import { corsair } from "@/lib/corsair";
 import {
   decodeGmailPubSubPayload,
   resolveTenantIdForGmailWebhook,
+  updateGmailWebhookHistoryId, // 👈 naya import
 } from "@/lib/services/gmail/webhook";
 
 export const runtime = "nodejs";
@@ -11,7 +12,7 @@ export const runtime = "nodejs";
 type WebhookBody = Record<string, unknown> | string;
 
 async function readWebhookBody(request: Request): Promise<WebhookBody> {
-  const text = await request.text(); 
+  const text = await request.text();
 
   if (!text.trim()) {
     return {};
@@ -39,20 +40,26 @@ function getTenantIdFromUrl(url: string) {
   );
 }
 
-async function resolveTenantId(request: Request, body: WebhookBody) {
+// 👇 CHANGE: ab ye gmailPayload bhi return karega (tenantId ke saath), taaki
+// route mein dobara decode na karna pade aur success ke baad historyId update ho sake
+async function resolveTenantIdAndPayload(request: Request, body: WebhookBody) {
   const tenantIdFromUrl = getTenantIdFromUrl(request.url);
-
-  if (tenantIdFromUrl) {
-    return tenantIdFromUrl;
-  }
-
   const gmailPayload = decodeGmailPubSubPayload(body);
 
-  if (!gmailPayload) {
-    return null;
+  if (tenantIdFromUrl) {
+    return { tenantId: tenantIdFromUrl, gmailPayload };
   }
 
-  return resolveTenantIdForGmailWebhook(gmailPayload.emailAddress);
+  if (!gmailPayload) {
+    return { tenantId: null, gmailPayload: null };
+  }
+
+  console.log("Resolving tenant for:", gmailPayload.emailAddress);
+
+  const tenant = await resolveTenantIdForGmailWebhook(gmailPayload.emailAddress);
+  console.log("Resolved tenant:", tenant);
+
+  return { tenantId: tenant, gmailPayload };
 }
 
 function jsonResponse(body: Record<string, unknown>, init?: ResponseInit) {
@@ -66,61 +73,18 @@ function jsonResponse(body: Record<string, unknown>, init?: ResponseInit) {
 }
 
 export async function POST(request: Request) {
-  const body = await readWebhookBody(request); 
+  console.log("webhook start ho raha hai !!!");
+  const body = await readWebhookBody(request);
 
   console.log({
-  messageId: (body as any)?.message?.messageId,
-  publishTime: (body as any)?.message?.publishTime,
-});
+    messageId: (body as any)?.message?.messageId,
+    publishTime: (body as any)?.message?.publishTime,
+  });
 
-  const tenantId = await resolveTenantId(request, body);
-
-  // console.log("\n================ WEBHOOK =================");
-  // console.log("URL:", request.url);
-
-  // console.log("\nHEADERS:");
-  // console.dir(Object.fromEntries(request.headers), { depth: null });
-
-  // console.log("\nBODY:");
-  // console.dir(body, { depth: null });
-
-  // console.log("=========================================\n");
-
-  /*
-  ================ WEBHOOK =================
-URL: https://localhost:3000/api/webhooks
-
-HEADERS:
-{
-  accept: 'application/json',
-  'accept-encoding': 'gzip, deflate, br',
-  'content-length': '332',
-  'content-type': 'application/json',
-  from: 'noreply@google.com',
-  host: 'recount-depravity-paramount.ngrok-free.dev',
-  'user-agent': 'APIs-Google; (+https://developers.google.com/webmasters/APIs-Google.html)',
-  'x-forwarded-for': '74.125.208.102',
-  'x-forwarded-host': 'recount-depravity-paramount.ngrok-free.dev',
-  'x-forwarded-port': '3000',
-  'x-forwarded-proto': 'https'
-}
-
-BODY:
-{
-  message: {
-    data: 'eyJlbWFpbEFkZHJlc3MiOiJyb2hhbjQ5NDIxQGdtYWlsLmNvbSIsImhpc3RvcnlJZCI6NTc1NTIzfQ==',
-    messageId: '19778183927998526',
-    message_id: '19778183927998526',
-    publishTime: '2026-07-04T09:58:32.458Z',
-    publish_time: '2026-07-04T09:58:32.458Z'
-  },
-  subscription: 'projects/daypilot-ai-499412/subscriptions/webhook-daypilot-sub'
-}
-=========================================  
-   */
+  const { tenantId, gmailPayload } = await resolveTenantIdAndPayload(request, body);
 
   if (!tenantId) {
-    console.warn("[webhooks] Could not resolve tenant");
+    console.warn("[webhooks],  tenant resolve fuck!");
 
     return jsonResponse(
       {
@@ -137,13 +101,21 @@ BODY:
       Object.fromEntries(request.headers),
       body,
       { tenantId },
-    );
+    );   
 
-    console.log("[webhooks] Processed", {
+    const dbMessages = await corsair
+  .withTenant(tenantId)
+  .gmail.db.messages.list({ limit: 5 });
+
+//console.log(dbMessages);
+
+    console.log(" ye process ho raha hai : ", {
       tenantId,
       plugin: result.plugin,
       action: result.action,
     });
+
+    console.dir(result, { depth: null });
 
     if (!result.plugin) {
       return jsonResponse(
@@ -155,6 +127,21 @@ BODY:
       );
     }
 
+    // 👇 CRITICAL FIX: processWebhook success hone ke baad naya historyId
+    // DB mein persist karo, taaki agla webhook stale/expired historyId se
+    // history.list() na chalaye. Ye pehle kabhi update hi nahi ho raha tha.
+    if (gmailPayload?.historyId) {
+      try {
+        await updateGmailWebhookHistoryId(tenantId, gmailPayload.historyId);
+        console.log("historyId updated:", {
+          tenantId,
+          historyId: gmailPayload.historyId,
+        });
+      } catch (err) {
+        console.error("[webhooks] Failed to persist historyId", err);
+      }
+    }
+
     const response = result.response ?? { success: true };
 
     const status =
@@ -164,11 +151,8 @@ BODY:
     return jsonResponse(response as Record<string, unknown>, {
       status,
       headers: result.responseHeaders,
-    }); 
-  }  
-
-  
-  catch (error) {
+    });
+  } catch (error) {
     console.error("[webhooks] Failed to process webhook", error);
 
     return jsonResponse(

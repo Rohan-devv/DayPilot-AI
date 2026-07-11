@@ -104,7 +104,7 @@ async function readGoogleJson<T>(response: Response) {
   }
 }
 
-async function getValidGmailAccessToken(
+export async function getValidGmailAccessToken(
   tenantId: string,
   forceRefresh = false,
 ) {
@@ -220,23 +220,6 @@ async function gmailRequest<T>(
   return data;
 }
 
-async function gmailApiRequest(tenantId: string, path: string) {
-  const response  = await fetch(`${GMAIL_API_BASE}${path}`, {
-    method: "GET",
-    headers: {
-      "content-type": "application/json",
-      authorization: `Bearer ${await getValidGmailAccessToken(tenantId)}`,
-    },
-  });  
-
-  const data = await readGoogleJson(response);
-
-  if (!response.ok) {
-    throw new Error(
-      `Gmail request failed (${response.status}): ${JSON.stringify(data)}`,
-    );
-  }
-}
 
 export function decodeGmailPubSubPayload(body: unknown) {
   if (!isRecord(body) || !isRecord(body.message)) {
@@ -319,38 +302,41 @@ async function saveGmailWebhookTenant({
         updatedAt: now,
       },
     });
+} 
+export async function updateGmailWebhookHistoryId(
+  tenantId: string,
+  historyId: string,
+) {
+  await db
+    .update(gmailWebhookTenants)
+    .set({
+      historyId,
+      updatedAt: new Date(),
+    })
+    .where(eq(gmailWebhookTenants.tenantId, tenantId));
 }
 
-export async function setupGmailWebhookForTenant(tenantId: string) {
+
+export async function setupGmailWebhookForTenant(
+  tenantId: string,
+): Promise<GmailWatchSetupResult> {
   const topicName = getGmailPubSubTopicName();
 
+  // 1. Read Gmail profile
   const profile = await gmailRequest<GmailProfileResponse>(
     tenantId,
     "/users/me/profile",
   );
 
-  /* ================================---output of profile---=========================
-
-  {
-  "emailAddress":"support@startup.com",
-  "historyId":"500"
-}
-  
-  */
-
   if (!profile.emailAddress) {
     throw new Error(`Could not read Gmail profile for tenant "${tenantId}".`);
   }
 
-  const normalizedEmailAddress = normalizeEmailAddress(profile.emailAddress);
+  const normalizedEmailAddress = normalizeEmailAddress(
+    profile.emailAddress,
+  );
 
-  await saveGmailWebhookTenant({
-    tenantId,
-    emailAddress: normalizedEmailAddress,
-    historyId: profile.historyId ?? null,
-    watchExpiration: null,
-  });
-
+  // 2. Start Gmail watch
   const watch = await gmailRequest<GmailWatchResponse>(
     tenantId,
     "/users/me/watch",
@@ -363,22 +349,15 @@ export async function setupGmailWebhookForTenant(tenantId: string) {
     },
   );
 
-  /* ================================---output of watch---=========================
-
-  {
-  "historyId":"500",
-  "expiration":"..."
-}
-  
-  */
-
-  const result = {
+  // 3. Prepare final state
+  const result: GmailWatchSetupResult = {
     tenantId,
     emailAddress: normalizedEmailAddress,
     historyId: watch.historyId ?? profile.historyId ?? null,
     watchExpiration: parseWatchExpiration(watch.expiration),
-  } satisfies GmailWatchSetupResult;
+  };
 
+  // 4. Persist once
   await saveGmailWebhookTenant(result);
 
   return result;

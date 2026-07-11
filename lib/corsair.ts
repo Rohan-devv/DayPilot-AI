@@ -17,7 +17,9 @@ export const corsair = createCorsair({
           before(ctx, args) {
             return { ctx, args };
           },
-          async after(ctx, result) {  
+          async after(ctx, result) {   
+            console.log("ye corsair ka after result : ")
+            console.dir(result, { depth: null });
             console.log("📨 MESSAGE_CHANGED", Date.now());
             console.log(`📨 Publishing inbox update for ${ctx.tenantId}`);
 

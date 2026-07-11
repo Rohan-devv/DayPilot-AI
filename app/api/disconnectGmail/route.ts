@@ -9,7 +9,8 @@ import {
   corsairIntegrations,
 } from "@/db/schema";
 
-import { and, eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm"; 
+import { getValidGmailAccessToken } from "@/lib/services/gmail/webhook";
 
 export async function POST(request: NextRequest) {
   const session = await auth();
@@ -57,7 +58,34 @@ export async function POST(request: NextRequest) {
 
     if (!account) {
       return NextResponse.json({ error: "Account not found" }, { status: 404 });
-    }
+    }    
+
+
+
+    if (plugin === "gmail") {
+  const accessToken = await getValidGmailAccessToken(
+    `user_${session.user.id}`,
+  );
+
+  const response = await fetch(
+    "https://gmail.googleapis.com/gmail/v1/users/me/stop",
+    {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    },
+  );
+
+  if (!response.ok) {
+    const error = await response.text();
+    throw new Error(`Failed to stop Gmail watch: ${error}`);
+  }
+
+  console.log("✅ Gmail watch stopped");
+}
+
+
 
     // Transaction = all or nothing
     await db.transaction(async (tx) => {

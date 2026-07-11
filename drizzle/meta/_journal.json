@@ -5,29 +5,8 @@
     {
       "idx": 0,
       "version": "7",
-      "when": 1781511119945,
-      "tag": "0000_wild_metal_master",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "7",
-      "when": 1781514053573,
-      "tag": "0001_flimsy_blink",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "7",
-      "when": 1781601984851,
-      "tag": "0002_bored_liz_osborn",
-      "breakpoints": true
-    },
-    {
-      "idx": 3,
-      "version": "7",
-      "when": 1783102562163,
-      "tag": "0003_pretty_runaways",
+      "when": 1783774302961,
+      "tag": "0000_parallel_titania",
       "breakpoints": true
     }
   ]
