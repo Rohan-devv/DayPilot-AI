@@ -7,10 +7,10 @@
 </p>
 
 <p align="center">
-  <img src="./public/image.png" alt="DayPilot AI" width="300" />
+  <img src="./public/image.png" alt="DayPilot AI" width="900" />
 </p>
 
-<h1 align="center">DayPilot AI</h1>
+
 
 <p align="center">
   <strong>DayPilot AI is your command center for email and time.</strong>
