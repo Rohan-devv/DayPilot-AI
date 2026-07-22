@@ -4,7 +4,7 @@
 
 <p align="center">
   <img
-    src="./public/hook-image.png"
+    src="./public/hook-img.png"
     alt="One sentence in. Gmail and Calendar work out."
     width="700" 
     height="200"
