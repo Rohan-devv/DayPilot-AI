@@ -1,3 +1,5 @@
+![DayPilot AI dashboard](./public/DayPilot.png)
+
 ![DayPilot AI dashboard](./public/image.png)
 
 # DayPilot AI
