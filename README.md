@@ -1,4 +1,6 @@
-# DayPilot AI
+# DayPilot AI 
+
+![DayPilot AI dashboard](./public/image.png)
 
 <p align="center">
   <img src="./public/DayPilot.png" alt="DayPilot AI" width="180" />
@@ -36,7 +38,7 @@
   </tr>
 </table>
 
-![DayPilot AI dashboard](./public/image.png)
+
 
 DayPilot AI is an AI-powered Gmail and Google Calendar copilot. It lets a user sign in with Google, connect Gmail and Calendar through Corsair, view a Gmail-style inbox, send email, and talk to an AI workspace that can use tenant-scoped Gmail and Calendar tools.
 
