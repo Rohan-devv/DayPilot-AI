@@ -1,4 +1,6 @@
-![DayPilot AI dashboard](./public/image.png)
+ <h1 align="center">DayPilot AI</h1>
+ 
+ ![DayPilot AI dashboard](./public/image.png)
 
 <p align="center">
   <img src="./public/readme-hook.svg" alt="One sentence in. Gmail and Calendar work out." />
