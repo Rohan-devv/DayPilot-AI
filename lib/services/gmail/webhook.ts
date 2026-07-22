@@ -241,7 +241,7 @@ export function decodeGmailPubSubPayload(body: unknown) {
 
     return {
       emailAddress: normalizeEmailAddress(payload.emailAddress),
-      historyId: payload.historyId,
+      historyId: String(payload.historyId),
     } satisfies GmailPubSubPayload;
   } catch {
     return null;

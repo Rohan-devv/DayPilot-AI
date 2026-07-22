@@ -7,6 +7,7 @@ import {
   corsairEntities,
   corsairEvents,
   corsairIntegrations,
+  gmailWebhookTenants
 } from "@/db/schema";
 
 import { and, eq } from "drizzle-orm"; 
@@ -99,7 +100,11 @@ export async function POST(request: NextRequest) {
 
       await tx
         .delete(corsairAccounts)
-        .where(eq(corsairAccounts.id, account.id));
+        .where(eq(corsairAccounts.id, account.id)); 
+      
+      await tx
+              .delete(gmailWebhookTenants)
+              .where(eq(gmailWebhookTenants.tenantId, account.tenantId))  
     });
 
     return NextResponse.json({
