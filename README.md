@@ -6,7 +6,7 @@
   <img
     src="./public/hook-image.png"
     alt="One sentence in. Gmail and Calendar work out."
-    width="900" 
+    width="700" 
     height="200"
     style="border-radius: 50px;"
   />
