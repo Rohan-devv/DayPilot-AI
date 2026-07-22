@@ -1,9 +1,16 @@
-![DayPilot AI dashboard](./public/DayPilot.png)
-
-### .Just say ~ send an email to someone@gmail.com for any purpose
-![DayPilot AI dashboard](./public/image.png)
-
 # DayPilot AI
+
+![DayPilot AI](./public/DayPilot.png)
+
+## One prompt for Gmail. One prompt for Calendar. DayPilot handles the busywork.
+
+DayPilot AI is your personal workspace copilot for email and time. Tell it what needs to happen in plain English, and it turns that sentence into real Gmail and Google Calendar actions.
+
+**For Gmail:** Just say `send an email to someone@gmail.com for the interview update`, and DayPilot can draft, format, and send it through your connected Gmail.
+
+**For Calendar:** Just say `schedule a meeting tomorrow at 3 PM with the design team`, and DayPilot can turn it into a calendar event with the right details in place.
+
+![DayPilot AI dashboard](./public/image.png)
 
 DayPilot AI is an AI-powered Gmail and Google Calendar copilot. It lets a user sign in with Google, connect Gmail and Calendar through Corsair, view a Gmail-style inbox, send email, and talk to an AI workspace that can use tenant-scoped Gmail and Calendar tools.
 
