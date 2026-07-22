@@ -3,7 +3,7 @@
  ![DayPilot AI dashboard](./public/DayPilot.png)
 
 <p align="center">
-  <img src="./public/readme-hook.svg" alt="One sentence in. Gmail and Calendar work out." />
+  <img src="./public/hook-image.png" alt="One sentence in. Gmail and Calendar work out." />
 </p>
 
 <p align="center">
