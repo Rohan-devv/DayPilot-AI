@@ -3,7 +3,12 @@
  ![DayPilot AI dashboard](./public/DayPilot.png)
 
 <p align="center">
-  <img  style="border-radius: 80px;" src="./public/hook-image.png" alt="One sentence in. Gmail and Calendar work out." />
+  <img
+    src="./public/hook-image.png"
+    alt="One sentence in. Gmail and Calendar work out."
+    width="900"
+    style="border-radius: 16px;"
+  />
 </p>
 
 <p align="center">
