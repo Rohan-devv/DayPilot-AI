@@ -1,24 +1,19 @@
-# DayPilot AI 
-
 ![DayPilot AI dashboard](./public/image.png)
+
+<p align="center">
+  <img src="./public/readme-hook.svg" alt="One sentence in. Gmail and Calendar work out." />
+</p>
+
+# DayPilot AI
 
 <p align="center">
   <img src="./public/DayPilot.png" alt="DayPilot AI" width="180" />
 </p>
 
-<h2 align="center">One sentence in. Gmail and Calendar work out.</h2>
-
 <p align="center">
   <strong>DayPilot AI is your command center for email and time.</strong>
   <br />
   No tabs. No form filling. No switching context. Just tell DayPilot what should happen.
-</p>
-
-<p align="center">
-  <kbd>Gmail Agent</kbd>
-  <kbd>Calendar Agent</kbd>
-  <kbd>AI Workspace</kbd>
-  <kbd>Realtime Inbox</kbd>
 </p>
 
 <table>
