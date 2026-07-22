@@ -1,0 +1,66 @@
+<svg width="1280" height="260" viewBox="0 0 1280 260" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc">
+  <title id="title">DayPilot AI hook banner</title>
+  <desc id="desc">One sentence in. Gmail and Calendar work out.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1280" y2="260" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#050013"/>
+      <stop offset="0.35" stop-color="#0A0F2A"/>
+      <stop offset="0.7" stop-color="#130019"/>
+      <stop offset="1" stop-color="#070707"/>
+    </linearGradient>
+    <linearGradient id="text" x1="132" y1="70" x2="1148" y2="185" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#00E5FF"/>
+      <stop offset="0.22" stop-color="#7C3AED"/>
+      <stop offset="0.45" stop-color="#FF3D81"/>
+      <stop offset="0.68" stop-color="#FFB000"/>
+      <stop offset="1" stop-color="#22C55E"/>
+    </linearGradient>
+    <linearGradient id="pill" x1="320" y1="206" x2="960" y2="206" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#00E5FF"/>
+      <stop offset="0.5" stop-color="#FF3D81"/>
+      <stop offset="1" stop-color="#FFB000"/>
+    </linearGradient>
+    <filter id="glow" x="-20%" y="-30%" width="140%" height="160%" color-interpolation-filters="sRGB">
+      <feGaussianBlur stdDeviation="8" result="blur"/>
+      <feColorMatrix in="blur" type="matrix" values="0 0 0 0 0.55 0 0 0 0 0.2 0 0 0 0 1 0 0 0 0.9 0"/>
+      <feMerge>
+        <feMergeNode/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    <filter id="softShadow" x="-20%" y="-20%" width="140%" height="140%" color-interpolation-filters="sRGB">
+      <feDropShadow dx="0" dy="16" stdDeviation="20" flood-color="#000000" flood-opacity="0.55"/>
+    </filter>
+  </defs>
+
+  <rect width="1280" height="260" rx="34" fill="url(#bg)"/>
+  <g opacity="0.65">
+    <circle cx="170" cy="52" r="110" fill="#00E5FF" fill-opacity="0.13"/>
+    <circle cx="1118" cy="74" r="150" fill="#FF3D81" fill-opacity="0.12"/>
+    <circle cx="622" cy="260" r="170" fill="#FFB000" fill-opacity="0.09"/>
+  </g>
+
+  <g filter="url(#softShadow)">
+    <rect x="58" y="38" width="1164" height="184" rx="28" fill="#090910" fill-opacity="0.72" stroke="url(#pill)" stroke-opacity="0.7"/>
+  </g>
+
+  <text x="640" y="113" text-anchor="middle" font-family="Inter, Segoe UI, Arial, sans-serif" font-size="58" font-weight="900" letter-spacing="-1">
+    <tspan fill="url(#text)" filter="url(#glow)">One sentence in.</tspan>
+    <tspan fill="#FFFFFF"> Gmail and Calendar work out.</tspan>
+  </text>
+
+  <text x="640" y="157" text-anchor="middle" fill="#C9D4FF" font-family="Inter, Segoe UI, Arial, sans-serif" font-size="22" font-weight="600">
+    Type it once. DayPilot drafts, sends, schedules, and keeps your day moving.
+  </text>
+
+  <g font-family="Inter, Segoe UI, Arial, sans-serif" font-size="16" font-weight="700">
+    <rect x="320" y="184" width="132" height="36" rx="18" fill="#00E5FF" fill-opacity="0.12" stroke="#00E5FF" stroke-opacity="0.45"/>
+    <text x="386" y="207" text-anchor="middle" fill="#7DEBFF">Gmail Agent</text>
+    <rect x="470" y="184" width="154" height="36" rx="18" fill="#7C3AED" fill-opacity="0.15" stroke="#A78BFA" stroke-opacity="0.45"/>
+    <text x="547" y="207" text-anchor="middle" fill="#C4B5FD">Calendar Agent</text>
+    <rect x="642" y="184" width="140" height="36" rx="18" fill="#FF3D81" fill-opacity="0.13" stroke="#FF7AB2" stroke-opacity="0.45"/>
+    <text x="712" y="207" text-anchor="middle" fill="#FFB3D1">AI Workspace</text>
+    <rect x="800" y="184" width="160" height="36" rx="18" fill="#22C55E" fill-opacity="0.13" stroke="#86EFAC" stroke-opacity="0.45"/>
+    <text x="880" y="207" text-anchor="middle" fill="#BBF7D0">Realtime Inbox</text>
+  </g>
+</svg>
