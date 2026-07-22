@@ -1,14 +1,40 @@
 # DayPilot AI
 
-![DayPilot AI](./public/DayPilot.png)
+<p align="center">
+  <img src="./public/DayPilot.png" alt="DayPilot AI" width="180" />
+</p>
 
-## One prompt for Gmail. One prompt for Calendar. DayPilot handles the busywork.
+<h2 align="center">One sentence in. Gmail and Calendar work out.</h2>
 
-DayPilot AI is your personal workspace copilot for email and time. Tell it what needs to happen in plain English, and it turns that sentence into real Gmail and Google Calendar actions.
+<p align="center">
+  <strong>DayPilot AI is your command center for email and time.</strong>
+  <br />
+  No tabs. No form filling. No switching context. Just tell DayPilot what should happen.
+</p>
 
-**For Gmail:** Just say `send an email to someone@gmail.com for the interview update`, and DayPilot can draft, format, and send it through your connected Gmail.
+<p align="center">
+  <kbd>Gmail Agent</kbd>
+  <kbd>Calendar Agent</kbd>
+  <kbd>AI Workspace</kbd>
+  <kbd>Realtime Inbox</kbd>
+</p>
 
-**For Calendar:** Just say `schedule a meeting tomorrow at 3 PM with the design team`, and DayPilot can turn it into a calendar event with the right details in place.
+<table>
+  <tr>
+    <td width="50%">
+      <h3>Gmail, From A Single Prompt</h3>
+      <p><strong>Just say:</strong></p>
+      <p><code>send an email to someone@gmail.com for the interview update</code></p>
+      <p><strong>DayPilot handles:</strong> drafting, formatting, sending, and keeping the inbox flow inside your connected Gmail.</p>
+    </td>
+    <td width="50%">
+      <h3>Calendar, Without The Back And Forth</h3>
+      <p><strong>Just say:</strong></p>
+      <p><code>schedule a meeting tomorrow at 3 PM with the design team</code></p>
+      <p><strong>DayPilot handles:</strong> reading the intent, preparing the event, and turning natural language into calendar action.</p>
+    </td>
+  </tr>
+</table>
 
 ![DayPilot AI dashboard](./public/image.png)
 
