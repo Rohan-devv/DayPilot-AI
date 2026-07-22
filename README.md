@@ -7,7 +7,7 @@
 </p>
 
 <p align="center">
-  <img src="./public/image.png" alt="DayPilot AI" width="180" />
+  <img src="./public/image.png" alt="DayPilot AI" width="300" />
 </p>
 
 <h1 align="center">DayPilot AI</h1>
