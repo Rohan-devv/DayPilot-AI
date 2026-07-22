@@ -1,6 +1,6 @@
 ![DayPilot AI dashboard](./public/DayPilot.png)
 
-Just say ~ send an email to someone@gmail.com for any purpose
+### .Just say ~ send an email to someone@gmail.com for any purpose
 ![DayPilot AI dashboard](./public/image.png)
 
 # DayPilot AI
