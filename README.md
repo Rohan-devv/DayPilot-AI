@@ -4,11 +4,11 @@
   <img src="./public/readme-hook.svg" alt="One sentence in. Gmail and Calendar work out." />
 </p>
 
-# DayPilot AI
-
 <p align="center">
   <img src="./public/DayPilot.png" alt="DayPilot AI" width="180" />
 </p>
+
+<h1 align="center">DayPilot AI</h1>
 
 <p align="center">
   <strong>DayPilot AI is your command center for email and time.</strong>
