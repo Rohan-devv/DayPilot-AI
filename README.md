@@ -1,13 +1,13 @@
  <h1 align="center">DayPilot AI</h1>
  
- ![DayPilot AI dashboard](./public/image.png)
+ ![DayPilot AI dashboard](./public/DayPilot.png)
 
 <p align="center">
   <img src="./public/readme-hook.svg" alt="One sentence in. Gmail and Calendar work out." />
 </p>
 
 <p align="center">
-  <img src="./public/DayPilot.png" alt="DayPilot AI" width="180" />
+  <img src="./public/image.png" alt="DayPilot AI" width="180" />
 </p>
 
 <h1 align="center">DayPilot AI</h1>
